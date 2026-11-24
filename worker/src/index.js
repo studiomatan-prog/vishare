@@ -191,7 +191,8 @@ async function db(env, method, path, { body } = {}) {
     method,
     headers: {
       apikey: env.SUPABASE_SERVICE_KEY,
-      authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+      // New-style secret keys (sb_secret_…) go only in `apikey`; legacy service_role JWTs also as Bearer.
+      ...(String(env.SUPABASE_SERVICE_KEY).startsWith("sb_") ? {} : { authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}` }),
       "content-type": "application/json",
       prefer: "return=representation",
     },
