@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#B8406F">
+<title>VISHARE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Rubik:wght@500;700;800&family=Assistant:wght@400;600;700&display=swap">
+<style>
+:root{
+  --grad:linear-gradient(100deg,#8E3F9E 0%,#E5446F 55%,#F6994C 100%);
+  --bg:#FBF7FA; --surface:#FFFFFF; --soft:#F5ECF4; --ink:#2A1730; --muted:#75667A; --line:#ECE1EC;
+  --plum:#8E3F9E; --pink:#D93D67; --orange:#D9762E; --ok:#2E8A57; --scrim:rgba(20,8,24,.62);
+  --wordmark:"Oswald","Arial Narrow",sans-serif;
+  --display:"Rubik","Arial Hebrew",Arial,sans-serif;
+  --body:"Assistant","Arial Hebrew",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#150D18; --surface:#211625; --soft:#2B1D30; --ink:#F6EEF7; --muted:#B5A4BA; --line:#3A2A3F;
+  --plum:#D79DE6; --pink:#FF7598; --orange:#FFAE6B; --ok:#6CCB93; --scrim:rgba(0,0,0,.72); color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;padding-bottom:env(safe-area-inset-bottom,0px)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.bar{position:sticky;top:0;z-index:5;background:var(--grad);color:#fff;padding-top:env(safe-area-inset-top,0px)}
+.bar .in{max-width:480px;margin:0 auto;height:58px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:0 max(12px,env(safe-area-inset-left,0px))}
+.logo{grid-column:2;display:flex;justify-content:center;align-items:center;gap:8px;direction:ltr}
+.logo svg{width:36px;height:25px}
+.logo b{font-family:var(--wordmark);font-weight:500;font-size:26px;letter-spacing:.02em}
+.iconbtn{width:44px;height:44px;border:0;background:none;color:#fff;display:grid;place-items:center;cursor:pointer;border-radius:12px}
+.iconbtn svg{width:24px;height:24px}
+main{max-width:480px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+section{display:flex;flex-direction:column;gap:18px}
+.event{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
+.ring{width:64px;height:64px;border-radius:50%;padding:3px;background:var(--grad)}
+.ring span{width:100%;height:100%;border-radius:50%;border:3px solid var(--bg);background:var(--soft);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:22px;color:var(--plum)}
+.kind{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--muted)}
+h1{font-family:var(--display);font-weight:800;font-size:30px;line-height:1.1;margin:2px 0;color:var(--orange);text-wrap:balance}
+.where{font-size:15px;color:var(--muted)}
+h2{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.2;margin:0;text-wrap:balance}
+p{margin:0}
+.muted{color:var(--muted)}.small{font-size:14px}
+.how{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.how li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start}
+.how .n{width:30px;height:30px;border-radius:50%;background:var(--soft);color:var(--plum);font-family:var(--wordmark);font-weight:600;display:grid;place-items:center}
+.how strong{display:block}
+.how span{color:var(--muted);font-size:15px}
+.field{display:grid;gap:6px}
+.field label{font-weight:700;font-size:15px}
+.field input{width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface)}
+.field input:focus{border-color:var(--plum);outline:none}
+.field small{color:var(--muted);font-size:13px}
+.btn{width:100%;border:0;border-radius:14px;padding:15px 18px;font-weight:700;font-size:18px;cursor:pointer;background:var(--grad);color:#fff;font-family:var(--display);text-align:center;display:block}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line);font-size:16px}
+.sr{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.hero-action{position:relative;display:grid;gap:4px;text-align:right;width:100%;border:0;border-radius:20px;padding:20px;background:var(--grad);color:#fff;cursor:pointer}
+.hero-action .t{font-family:var(--display);font-weight:700;font-size:22px;display:flex;align-items:center;gap:10px}
+.hero-action .t svg{width:26px;height:26px}
+.hero-action .s{opacity:.92;font-size:15px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{position:relative;display:grid;gap:8px;align-content:start;text-align:right;border:1.5px solid var(--line);background:var(--surface);border-radius:18px;padding:16px;cursor:pointer;min-width:0}
+.tile svg{width:28px;height:28px;color:var(--pink)}
+.tile strong{font-size:17px}
+.tile span{font-size:14px;color:var(--muted)}
+.tile.wide{grid-column:1/-1;grid-template-columns:auto 1fr auto;align-items:center}
+.count{font-family:var(--wordmark);font-weight:600;font-size:15px;color:var(--plum);background:var(--soft);border-radius:999px;padding:2px 10px}
+.notice{display:flex;gap:10px;align-items:flex-start;background:var(--soft);border-radius:14px;padding:12px 14px;font-size:15px}
+.notice svg{flex:none;width:20px;height:20px;color:var(--plum);margin-top:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;cursor:pointer;font-weight:600;font-size:15px}
+.chip[aria-pressed="true"]{border-color:var(--plum);background:var(--soft);color:var(--plum)}
+.files{display:grid;gap:10px}
+.file{display:grid;grid-template-columns:60px 1fr 36px;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px}
+.file video{width:60px;height:60px;object-fit:cover;border-radius:10px;background:var(--soft)}
+.file .nm{font-size:14px;overflow-wrap:anywhere}
+.prog{height:6px;border-radius:6px;background:var(--soft);overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;width:0;background:var(--grad);transition:width .25s}
+.file .st{font-size:13px;color:var(--muted);margin-top:3px}
+.file.done .st{color:var(--ok);font-weight:700}
+.file.err .st{color:var(--pink);font-weight:700}
+.file .x{width:36px;height:36px;border:0;border-radius:10px;background:var(--soft);color:var(--pink);font-size:22px;line-height:1;cursor:pointer}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.cell{position:relative;border:0;padding:0;border-radius:12px;overflow:hidden;cursor:pointer;aspect-ratio:4/5;background:var(--soft)}
+.cell video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.cell .tag{position:absolute;top:6px;right:6px;background:var(--pink);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px}
+.empty{text-align:center;padding:30px 10px;color:var(--muted);grid-column:1/-1}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:12px}
+.card h3{margin:0;font-family:var(--display);font-size:18px}
+.overlay{position:fixed;inset:0;z-index:20;background:var(--scrim);display:grid;place-items:center;padding:16px}
+.viewer{width:min(420px,100%);display:grid;gap:10px}
+.viewer .media{border-radius:18px;overflow:hidden;background:#000;max-height:70vh;display:grid;place-items:center}
+.viewer video{width:100%;max-height:70vh}
+.viewer .acts{display:flex;justify-content:space-around;background:var(--surface);border-radius:16px;padding:6px}
+.viewer .acts button{border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:13px;padding:8px 14px;cursor:pointer;border-radius:10px}
+.viewer .acts svg{width:22px;height:22px}
+.viewer .acts .del{color:var(--pink)}
+.sheet{width:min(360px,100%);background:var(--surface);border-radius:20px;padding:22px;display:grid;gap:12px;text-align:center}
+.sheet h3{margin:0;font-family:var(--display);font-size:22px;color:var(--pink)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;z-index:30;font-size:15px;max-width:90vw;text-align:center}
+.center{text-align:center;padding-top:40px}
+@media (prefers-reduced-motion:reduce){.prog i{transition:none}}
+</style>
+</head>
+<body>
+<header class="bar"><div class="in">
+  <button class="iconbtn" id="back" aria-label="חזרה" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+  <div class="logo"><svg viewBox="0 0 38 26" aria-hidden="true"><rect width="27" height="26" rx="6" fill="#fff"/><path d="M29 9.5 38 4v18l-9-5.5z" fill="#fff"/><g fill="#E5446F"><circle cx="7.5" cy="9" r="2.6"/><circle cx="7.5" cy="17" r="2.6"/><circle cx="19" cy="13" r="2.6"/></g><path d="M7.5 9 19 13 7.5 17" stroke="#E5446F" stroke-width="1.8" fill="none"/></svg><b>VISHARE</b></div>
+</div></header>
+
+<main>
+<section id="v-loading"><p class="center muted">טוען…</p></section>
+
+<section id="v-error" hidden><div class="center"><h2 id="err-title">משהו לא עבד</h2><p class="muted" id="err-text" style="margin-top:8px"></p></div></section>
+
+<section id="v-welcome" hidden>
+  <div class="event"><div class="ring"><span class="mono"></span></div>
+    <div><div class="kind" data-kind></div><h1 data-names></h1><div class="where" data-where></div></div></div>
+  <h2>תהיו הצלמים שלנו הערב</h2>
+  <p>כל אורח רואה את האירוע מזווית אחרת. צלמו מכאן, וכל סרטון מגיע ישר אלינו. מכל הסרטונים נערוך סרטונים מהערב.</p>
+  <ul class="how">
+    <li><span class="n">1</span><div><strong>מצלמים ישר מכאן</strong><span>לוחצים ״צלמו עכשיו״, והסרטון עולה מיד</span></div></li>
+    <li><span class="n">2</span><div><strong>צילמתם במצלמה הרגילה?</strong><span>אפשר להוסיף מהגלריה עד <b data-close></b></span></div></li>
+    <li><span class="n">3</span><div><strong>רק אתם והזוג רואים</strong><span>הסרטונים שלכם, ואפשר למחוק כל אחד מהם</span></div></li>
+  </ul>
+  <form id="join" class="field" style="gap:14px" novalidate>
+    <div class="field"><label for="g-name">השם שלך</label><input id="g-name" autocomplete="name" placeholder="למשל: רונית כהן" required><small>כדי שהזוג יידע ממי כל סרטון</small></div>
+    <div class="field"><label for="g-phone">טלפון נייד</label><input id="g-phone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" style="text-align:right" placeholder="050-0000000" required><small>נשלח לך תזכורת בסוף האירוע ובבוקר שלמחרת, להעלות את הסרטונים האחרונים</small></div>
+    <button class="btn" id="go" type="submit" disabled>כניסה לאירוע</button>
+  </form>
+</section>
+
+<section id="v-home" hidden>
+  <div class="event"><div class="ring"><span class="mono"></span></div>
+    <div><div class="kind" id="hi"></div><h1 data-names></h1><div class="where" data-where></div></div></div>
+  <label class="hero-action" for="cam-in"><input id="cam-in" type="file" accept="video/*" capture="environment" class="sr">
+    <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="m16 10 6-3v10l-6-3"/><circle cx="9" cy="12" r="2.2" fill="currentColor"/></svg>צלמו עכשיו</span>
+    <span class="s">המצלמה נפתחת, ובסיום הצילום הסרטון עולה אוטומטית</span></label>
+  <div class="tiles">
+    <button class="tile" data-go="greet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z"/></svg><strong>ברכה לזוג</strong><span>כמה מילים ישר למצלמה</span></button>
+    <label class="tile" for="gal-in"><input id="gal-in" type="file" accept="video/*" multiple class="sr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg><strong>הוספה מהגלריה</strong><span>סרטונים שצילמתם במצלמה הרגילה</span></label>
+    <button class="tile wide" data-go="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 8h18M3 16h18M8 3v5M16 3v5M8 16v5M16 16v5M10.5 10l4 2-4 2z"/></svg><div><strong>הסרטונים שלי</strong><br><span>צפייה ומחיקה</span></div><span class="count" id="mine-count">0</span></button>
+  </div>
+  <div class="notice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>אפשר להוסיף סרטונים עד <b data-close></b>.</span></div>
+</section>
+
+<section id="v-upload" hidden>
+  <h2>הסרטונים עולים</h2>
+  <p class="muted">אל תסגרו את הדף עד שכל הסרטונים מסומנים ✓. אפשר למחוק סרטון בלחיצה על ×.</p>
+  <div class="field"><label>מאיזה חלק בערב? (לא חובה)</label><div class="chips" id="chips"></div><small>לא בטוחים? נמיין לפי שעת הצילום.</small></div>
+  <div class="files" id="up-files"></div>
+  <div class="row"><label class="btn ghost" for="cam-in">צילום נוסף</label><button class="btn" id="up-done">סיום</button></div>
+</section>
+
+<section id="v-greet" hidden>
+  <h2>ברכה ל<span data-names></span></h2>
+  <p>כמה מילים מהלב, ישר למצלמה. הברכות ייכנסו לסרטון ברכות מיוחד.</p>
+  <div class="card"><h3>איך לצלם ברכה טובה</h3>
+    <ul class="how">
+      <li><span class="n">1</span><div><strong>מצלמה קדמית, לאורך</strong><span>הפנים במרכז, הטלפון בגובה העיניים</span></div></li>
+      <li><span class="n">2</span><div><strong>מקום שקט</strong><span>רחוק מהרמקולים, כדי שישמעו אתכם</span></div></li>
+      <li><span class="n">3</span><div><strong>עד דקה</strong><span>מי אתם, ומה אתם מאחלים</span></div></li>
+    </ul></div>
+  <label class="hero-action" for="gr-in" style="justify-items:center;text-align:center"><input id="gr-in" type="file" accept="video/*" capture="user" class="sr">
+    <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="m16 10 6-3v10l-6-3"/><circle cx="9" cy="12" r="2.2" fill="currentColor"/></svg>צלמו ברכה עכשיו</span>
+    <span class="s">המצלמה הקדמית נפתחת</span></label>
+  <div class="files" id="gr-files"></div>
+</section>
+
+<section id="v-mine" hidden>
+  <h2>הסרטונים שלי</h2>
+  <p class="muted small">רק אתם והזוג רואים את הסרטונים שלכם. לחצו על סרטון כדי לצפות בו או למחוק אותו.</p>
+  <div class="grid" id="mine-grid"></div>
+</section>
+
+<section id="v-closed" hidden>
+  <div class="event"><div class="ring"><span class="mono"></span></div>
+    <div><div class="kind" data-kind></div><h1 data-names></h1><div class="where" data-where></div></div></div>
+  <div class="card" style="text-align:center"><h3>ההעלאה לאירוע נסגרה</h3><p class="muted">תודה לכל מי שצילם! הסרטונים כבר בעריכה.</p></div>
+  <button class="btn ghost" data-go="mine" id="closed-mine" hidden>הסרטונים שלי</button>
+</section>
+</main>
+
+<div class="overlay" id="viewer" hidden><div class="viewer">
+  <div class="media" id="vw-media"></div>
+  <div class="acts">
+    <button id="vw-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>סגירה</button>
+    <button id="vw-del" class="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>מחיקה</button>
+  </div></div></div>
+<div class="overlay" id="confirm" hidden><div class="sheet"><h3>למחוק את הסרטון?</h3><p>הסרטון יימחק מהאירוע ולא ייכנס לעריכה. אי אפשר לשחזר אותו.</p>
+  <div class="row"><button class="btn ghost" id="cf-no">ביטול</button><button class="btn" id="cf-yes">מחיקה</button></div></div></div>
+<div class="overlay" id="thanks" hidden><div class="sheet"><h3 style="color:var(--plum)">תודה רבה!</h3><p id="th-text"></p>
+  <div class="row"><button class="btn ghost" id="th-mine">הסרטונים שלי</button><button class="btn" id="th-home">סיום</button></div></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="/guest.js"></script>
+</body>
+</html>

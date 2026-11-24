@@ -1,0 +1,31 @@
+name = "vishare"
+main = "worker/src/index.js"
+compatibility_date = "2026-11-01"
+account_id = "42cc50597bbe48a1e5f80e95fdbb741c"
+
+# Static pages (guest page, couple page, admin, sales site)
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*", "/e/*"]
+
+# Video storage
+[[r2_buckets]]
+binding = "VIDEOS"
+bucket_name = "vishare-videos"
+
+[vars]
+SUPABASE_URL = "https://nwtclrujsjwvtlrohdma.supabase.co"
+R2_ACCOUNT_ID = "42cc50597bbe48a1e5f80e95fdbb741c"
+R2_BUCKET = "vishare-videos"
+
+# Custom domain (active once vishare.co.il is live on Cloudflare)
+routes = [
+  { pattern = "vishare.co.il", custom_domain = true },
+]
+
+# Secrets (set with `npx wrangler secret put NAME`, never committed):
+#   SUPABASE_SERVICE_KEY   - Supabase > Project Settings > API keys > service_role / secret key
+#   R2_ACCESS_KEY_ID       - R2 > Manage API tokens > Object Read & Write, bucket vishare-videos
+#   R2_SECRET_ACCESS_KEY
+#   ADMIN_TOKEN            - long random string for the LOCO admin API
