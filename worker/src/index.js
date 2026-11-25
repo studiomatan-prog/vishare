@@ -195,6 +195,26 @@ async function api(req, env, url) {
       return json({ coupleLink: `${url.origin}/couple#${coupleToken}` });
     }
 
+    // System check: Supabase + presigned upload to R2, server-side (no CORS involved)
+    if (m === "GET" && p === "/api/admin/selftest") {
+      const out = { supabase: null, r2Put: null, r2Head: null, cors: null };
+      try { await db(env, "GET", "events?select=id&limit=1"); out.supabase = "ok"; } catch (e) { out.supabase = String(e.message).slice(0, 300); }
+      const key = `selftest/${Date.now()}.txt`;
+      try {
+        const u = await presignR2(env, "PUT", key, 300);
+        const res = await fetch(u, { method: "PUT", body: "vishare selftest", headers: { "content-type": "text/plain" } });
+        out.r2Put = res.ok ? "ok" : `${res.status}: ${(await res.text()).slice(0, 400)}`;
+        const h = await env.VIDEOS.head(key);
+        out.r2Head = h ? "ok" : "missing";
+        // Preflight as a browser on vishare.co.il would send it
+        const pre = await fetch(u, { method: "OPTIONS", headers: {
+          origin: url.origin, "access-control-request-method": "PUT", "access-control-request-headers": "content-type" } });
+        out.cors = pre.headers.get("access-control-allow-origin") ? "ok" : `missing (status ${pre.status})`;
+        await env.VIDEOS.delete(key);
+      } catch (e) { out.r2Put = out.r2Put || String(e.message).slice(0, 300); }
+      return json(out);
+    }
+
     // Remove a video (e.g. inappropriate content)
     if (m === "DELETE" && (r = p.match(/^\/api\/admin\/videos\/([0-9a-f-]{36})$/))) {
       const [v] = await db(env, "GET", `videos?id=eq.${r[1]}&select=*`);

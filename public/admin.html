@@ -110,7 +110,8 @@ td.num{font-family:var(--wordmark);font-variant-numeric:tabular-nums}
   </form>
 
   <section id="dash" hidden style="display:grid;gap:18px">
-    <div class="head"><div><h1>אירועים</h1><p class="sub">לחצו על אירוע כדי לראות את הלינקים והסרטונים</p></div><button class="btn" id="new">אירוע חדש</button></div>
+    <div class="head"><div><h1>אירועים</h1><p class="sub">לחצו על אירוע כדי לראות את הלינקים והסרטונים</p></div><div class="acts"><button class="btn ghost" id="selftest">בדיקת מערכת</button><button class="btn" id="new">אירוע חדש</button></div></div>
+    <div class="card" id="selftest-out" hidden></div>
     <div class="kpis" id="kpis"></div>
     <div class="tbl"><table><thead><tr><th>אירוע</th><th>תאריך</th><th>חבילה</th><th>סטטוס</th><th>ההעלאה נסגרת</th><th>אורחים שצילמו</th><th>סרטונים</th></tr></thead><tbody id="rows"></tbody></table></div>
   </section>
