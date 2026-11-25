@@ -85,3 +85,10 @@ alter table invitees enable row level security;
 grant usage on schema public to service_role;
 grant all on all tables in schema public to service_role;
 alter default privileges in schema public grant all on tables to service_role;
+
+-- Raw-video retention: raw guest videos are deleted 30 days after uploads close,
+-- but only after LOCO marks the event as backed up. Edited videos are kept.
+alter table events add column if not exists raw_backed_up_at timestamptz;
+alter table events add column if not exists raw_purged_at timestamptz;
+alter table videos drop constraint if exists videos_status_check;
+alter table videos add constraint videos_status_check check (status in ('pending','uploaded','deleted','purged'));

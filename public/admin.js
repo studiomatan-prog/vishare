@@ -22,6 +22,14 @@
     if (e.event_date > today) return "pre";
     return new Date(e.upload_closes_at) > new Date() ? "open" : "edit";
   }
+  const DAY = 864e5;
+  const rawDel = (e) => new Date(new Date(e.upload_closes_at).getTime() + 30 * DAY);
+  function rawBadge(e) {
+    if (e.raw_purged_at) return ` <span class="pill st-done" title="הסרטונים הגולמיים נמחקו">גולמיים נמחקו</span>`;
+    if (!e.raw_backed_up_at && new Date() > new Date(e.upload_closes_at) && rawDel(e) - Date.now() < 7 * DAY)
+      return ` <span class="pill st-open" title="הסרטונים הגולמיים לא יימחקו עד שתסמנו גיבוי">צריך גיבוי</span>`;
+    return "";
+  }
   const pill = (s) => `<span class="pill ${ST[s][1]}">${ST[s][0]}</span>`;
   const guestLink = (slug) => `${location.origin}/e/${slug}`;
 
@@ -43,7 +51,7 @@
       .map(([a, b]) => `<div class="kpi"><span>${a}</span><b>${b}</b></div>`).join("");
     $("rows").innerHTML = events.length ? events.map((e) => `<tr data-slug="${esc(e.slug)}">
       <td class="cname"><strong>${esc(e.couple_names)}</strong><span>${esc(e.event_type)}${e.venue ? " · " + esc(e.venue) : ""}</span></td>
-      <td class="num">${fmtDate(e.event_date)}</td><td>${esc(e.package)}</td><td>${pill(stateOf(e))}</td>
+      <td class="num">${fmtDate(e.event_date)}</td><td>${esc(e.package)}</td><td>${pill(stateOf(e))}${rawBadge(e)}</td>
       <td>${fmtDT(e.upload_closes_at)}</td><td class="num">${e.guests}</td><td class="num">${e.videos}</td></tr>`).join("")
       : `<tr><td colspan="7" class="empty">עוד אין אירועים. לחצו על ״אירוע חדש״.</td></tr>`;
     $("rows").querySelectorAll("tr[data-slug]").forEach((tr) => (tr.onclick = () => openEvent(tr.dataset.slug)));
@@ -104,6 +112,13 @@
         <div class="acts"><button class="btn sm ghost" id="new-couple">יצירת לינק חדש לזוג</button></div></div>
       <div class="card"><h2>מועד סגירת ההעלאה</h2>
         <div class="acts"><input type="datetime-local" id="close-at" value="${closesLocal}" style="padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg)"><button class="btn sm" id="close-save">שמירה</button><button class="btn sm ghost" id="close-now">סגירה עכשיו</button></div></div>
+      <div class="card"><h2>גיבוי ומחיקת הגולמיים</h2>${e.raw_purged_at
+        ? `<p>הסרטונים הגולמיים נמחקו ב־${fmtDT(e.raw_purged_at)}. האירוע, הלינקים והסרטונים הערוכים נשמרים.</p>`
+        : `<p>הסרטונים הגולמיים יימחקו אוטומטית ב־<b>${fmtDT(rawDel(e))}</b>, 30 יום אחרי סגירת ההעלאה.</p>
+           ${e.raw_backed_up_at
+             ? `<p style="color:var(--ok);font-weight:700">✓ סימנתם שגיביתם (${fmtDT(e.raw_backed_up_at)})</p><div class="acts"><button class="btn sm ghost" id="unbackup">ביטול הסימון</button></div>`
+             : `<p class="sub">כל עוד לא סימנתם שגיביתם, שום דבר לא יימחק. הורידו את כל הסרטונים, שמרו אותם, ואז סמנו.</p><div class="acts"><button class="btn sm" id="backup">גיביתי את החומרים</button></div>`}`}
+      </div>
       <div class="card"><div class="head"><h2>סרטונים</h2>${vids.length ? `<div class="acts"><button class="btn sm" id="dl-all">הורדת הכול</button><button class="btn sm ghost" id="copy-all">העתקת כל הקישורים</button></div>` : ""}</div>
         ${vids.length ? Object.entries(byGuest).map(([k, list]) => { const [n, ph] = k.split("|"); return `<div class="guest"><h3>${esc(n)} <span>${esc(ph)}</span></h3><div class="vids">${list.map((v) => `
           <div class="vid"><video src="${esc(v.url)}#t=0.5" preload="metadata" controls playsinline></video>
@@ -131,6 +146,11 @@
     };
     $("close-save").onclick = () => { const v = $("close-at").value; if (v) saveClose(new Date(v).toISOString()); };
     $("close-now").onclick = () => { if (confirm("לסגור את ההעלאה לאירוע עכשיו?")) saveClose(new Date().toISOString()); };
+    const markBackup = async (undo) => {
+      try { await api(`/api/admin/events/${slug}/backed-up`, { method: "POST", body: { undo } }); toast(undo ? "הסימון בוטל" : "סומן כמגובה"); await load(); openEvent(slug); } catch (err) { toast(err.message); }
+    };
+    if ($("backup")) $("backup").onclick = () => { if (confirm(`הורדתם ושמרתם את כל ${vids.length} הסרטונים?\n\nהסרטונים הגולמיים יימחקו אוטומטית ב־${fmtDT(rawDel(e))}.`)) markBackup(false); };
+    if ($("unbackup")) $("unbackup").onclick = () => markBackup(true);
     d.querySelectorAll("[data-del]").forEach((b) => (b.onclick = async () => {
       if (!confirm("למחוק את הסרטון? אי אפשר לשחזר.")) return;
       try { await api(`/api/admin/videos/${b.dataset.del}`, { method: "DELETE" }); toast("נמחק"); await load(); openEvent(slug); } catch (err) { toast(err.message); }

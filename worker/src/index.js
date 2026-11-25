@@ -5,9 +5,16 @@
 import { presignR2 } from "./sigv4.js";
 
 const MAX_BYTES = 2 * 1024 ** 3; // 2 GB per video
+const RAW_KEEP_DAYS = 30;       // raw guest videos are deleted this long after uploads close (only once backed up)
 const MOMENTS = ["צילומי חוץ", "חופה", "ריקודים", "סלואו", "ברכות"];
 
 export default {
+  // Daily cron (wrangler.toml [triggers]): delete raw guest videos of events that were backed up
+  // and whose keep period ended. Events, links and edited videos are never deleted.
+  async scheduled(_event, env, ctx) {
+    ctx.waitUntil(purgeRaw(env));
+  },
+
   async fetch(req, env) {
     const url = new URL(req.url);
     try {
@@ -235,6 +242,15 @@ async function api(req, env, url) {
       return json({ event: rest });
     }
 
+    // Mark raw videos as backed up (allows automatic deletion after the keep period), or undo
+    if (m === "POST" && (r = p.match(/^\/api\/admin\/events\/([a-z0-9-]+)\/backed-up$/))) {
+      const ev = await eventBySlug(env, r[1]);
+      const b = await readJson(req).catch(() => ({}));
+      const val = b && b.undo ? null : new Date().toISOString();
+      await db(env, "PATCH", `events?id=eq.${ev.id}`, { body: { raw_backed_up_at: val } });
+      return json({ rawBackedUpAt: val, rawDeleteAt: rawDeleteAt(ev) });
+    }
+
     // New private link for the couple (the old one stops working)
     if (m === "POST" && (r = p.match(/^\/api\/admin\/events\/([a-z0-9-]+)\/couple-link$/))) {
       const ev = await eventBySlug(env, r[1]);
@@ -328,7 +344,25 @@ function publicEvent(ev) {
   return {
     slug: ev.slug, coupleNames: ev.couple_names, eventType: ev.event_type,
     eventDate: ev.event_date, venue: ev.venue, uploadClosesAt: ev.upload_closes_at, open: isOpen(ev),
+    rawDeleteAt: rawDeleteAt(ev), rawPurgedAt: ev.raw_purged_at || null,
   };
+}
+function rawDeleteAt(ev) {
+  return new Date(new Date(ev.upload_closes_at).getTime() + RAW_KEEP_DAYS * 864e5).toISOString();
+}
+
+export async function purgeRaw(env, now = Date.now()) {
+  const evs = await db(env, "GET", "events?raw_backed_up_at=not.is.null&raw_purged_at=is.null&select=*");
+  const done = [];
+  for (const ev of evs) {
+    if (new Date(rawDeleteAt(ev)).getTime() > now) continue;
+    const vids = await db(env, "GET", `videos?event_id=eq.${ev.id}&status=in.(uploaded,pending)&select=id,r2_key`);
+    for (let i = 0; i < vids.length; i += 1000) await env.VIDEOS.delete(vids.slice(i, i + 1000).map((v) => v.r2_key));
+    if (vids.length) await db(env, "PATCH", `videos?event_id=eq.${ev.id}&status=in.(uploaded,pending)`, { body: { status: "purged", deleted_at: new Date(now).toISOString() } });
+    await db(env, "PATCH", `events?id=eq.${ev.id}`, { body: { raw_purged_at: new Date(now).toISOString() } });
+    done.push({ slug: ev.slug, deleted: vids.length });
+  }
+  return done;
 }
 function isOpen(ev) { return new Date(ev.upload_closes_at).getTime() > Date.now(); }
 

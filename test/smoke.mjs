@@ -1,5 +1,5 @@
 // Smoke test for the Worker API with an in-memory fake of Supabase REST and R2.
-import worker from "../worker/src/index.js";
+import worker, { purgeRaw } from "../worker/src/index.js";
 
 const tables = { events: [], guests: [], videos: [], edits: [], invitees: [] };
 const r2 = new Map();
@@ -11,7 +11,9 @@ globalThis.fetch = async (url, init = {}) => {
   const table = u.pathname.split("/").pop();
   const rows = tables[table];
   const filters = [...u.searchParams].filter(([k]) => !["select", "order"].includes(k));
-  const match = (r) => filters.every(([k, v]) => v.startsWith("in.(") ? v.slice(4, -1).split(",").includes(String(r[k])) : String(r[k]) === v.replace(/^eq\./, ""));
+  const match = (r) => filters.every(([k, v]) =>
+    v === "is.null" ? r[k] == null : v === "not.is.null" ? r[k] != null :
+    v.startsWith("in.(") ? v.slice(4, -1).split(",").includes(String(r[k])) : String(r[k]) === v.replace(/^eq\./, ""));
   const method = init.method || "GET";
   const ok = (d) => new Response(JSON.stringify(d), { status: 200 });
   if (method === "GET") return ok(rows.filter(match).map((r) => (table === "videos" ? { ...r, guests: tables.guests.find((g) => g.id === r.guest_id) } : r)));
@@ -27,7 +29,7 @@ globalThis.fetch = async (url, init = {}) => {
 const env = {
   SUPABASE_URL: "https://x.supabase.co", SUPABASE_SERVICE_KEY: "k", R2_ACCOUNT_ID: "acc", R2_BUCKET: "vishare-videos",
   R2_ACCESS_KEY_ID: "AK", R2_SECRET_ACCESS_KEY: "SK", ADMIN_TOKEN: "admin",
-  VIDEOS: { head: async (k) => (r2.has(k) ? { size: r2.get(k) } : null), delete: async (k) => r2.delete(k) },
+  VIDEOS: { head: async (k) => (r2.has(k) ? { size: r2.get(k) } : null), delete: async (k) => [].concat(k).forEach((x) => r2.delete(x)) },
   ASSETS: { fetch: async (req) => new Response("asset:" + new URL(req.url).pathname) },
 };
 const call = async (method, path, body, token) => {
@@ -87,6 +89,23 @@ assert(r.data.saved === 2, "invitees saved, deduped, invalid dropped");
 r = await call("PUT", "/api/couple/invitees", { invitees: [{ name: "ה", phone: "0533333333" }] }, ctok);
 r = await call("GET", "/api/couple/invitees", null, ctok);
 assert(r.data.invitees.length === 1 && r.data.invitees[0].phone === "0533333333", "new upload replaces the list");
+// --- raw video retention ---
+r = await call("POST", "/api/admin/events", { slug: "old", couple_names: "ישן", event_date: "2026-01-01", upload_closes_at: "2026-01-03T18:00:00Z" }, "admin");
+const oldTok = (await call("POST", "/api/events/old/join", { name: "x", phone: "0509999999" })).data.token;
+tables.events.find((e) => e.slug === "old").upload_closes_at = "2099-01-01T00:00:00Z";
+const ov = (await call("POST", "/api/me/uploads", { contentType: "video/mp4", size: 5, fileName: "o.mp4" }, oldTok)).data.videoId;
+const okey = tables.videos.find((v) => v.id === ov).r2_key; r2.set(okey, 5);
+await call("POST", `/api/me/uploads/${ov}/complete`, null, oldTok);
+tables.events.find((e) => e.slug === "old").upload_closes_at = "2026-01-03T18:00:00Z";
+let pr = await purgeRaw(env, Date.parse("2026-11-25T00:00:00Z"));
+assert(pr.length === 0 && r2.has(okey), "not backed up -> nothing deleted even after 30 days");
+r = await call("POST", "/api/admin/events/old/backed-up", {}, "admin");
+assert(r.data.rawBackedUpAt && r.data.rawDeleteAt.startsWith("2026-02-02"), "mark backed up; delete date = close + 30 days");
+pr = await purgeRaw(env, Date.parse("2026-01-20T00:00:00Z"));
+assert(pr.length === 0 && r2.has(okey), "backed up but within 30 days -> kept");
+pr = await purgeRaw(env, Date.parse("2026-02-03T00:00:00Z"));
+assert(pr[0]?.deleted === 1 && !r2.has(okey) && tables.videos.find((v) => v.id === ov).status === "purged", "after 30 days and backup -> raw deleted");
+assert(tables.events.find((e) => e.slug === "old").raw_purged_at && (await call("GET", "/api/events/old")).status === 200, "event itself kept, marked purged");
 r = await worker.fetch(new Request("https://vishare.co.il/e/dana-david"), env);
 assert((await r.text()) === "asset:/guest", "guest link serves guest page");
 console.log("ALL PASSED");

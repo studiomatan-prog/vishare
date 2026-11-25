@@ -14,6 +14,10 @@ directory = "./public"
 binding = "ASSETS"
 run_worker_first = ["/api/*", "/e/*"]
 
+# Daily at 03:00 UTC (05:00 Israel): delete raw videos of backed-up events after 30 days
+[triggers]
+crons = ["0 3 * * *"]
+
 # Video storage
 [[r2_buckets]]
 binding = "VIDEOS"

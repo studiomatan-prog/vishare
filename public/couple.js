@@ -47,7 +47,17 @@ ${D.guestLink}
   function fail(t) { $("loading").hidden = true; $("error").hidden = false; $("err-text").textContent = t; }
 
   /* ---------- videos ---------- */
+  function rawNote() {
+    const e = D.event, n = $("raw-note");
+    const fmt = (d) => new Date(d).toLocaleDateString("he-IL", { timeZone: "Asia/Jerusalem", day: "numeric", month: "numeric", year: "numeric" });
+    if (e.rawPurgedAt) { n.innerHTML = `<span>🗂️</span><span>הסרטונים הגולמיים מהאורחים נמחקו ב־${fmt(e.rawPurgedAt)}. הסרטונים הערוכים נשארים כאן תמיד.</span>`; n.hidden = false; return; }
+    if (!D.videos.length) return;
+    const left = (new Date(e.rawDeleteAt) - Date.now()) / 864e5;
+    n.innerHTML = `<span>${left < 7 ? "⚠️" : "📥"}</span><span>הסרטונים מהאורחים זמינים להורדה עד <b>${fmt(e.rawDeleteAt)}</b>.${left < 7 ? " כדאי להוריד אותם עכשיו." : ""} הסרטונים הערוכים נשארים כאן תמיד.</span>`;
+    n.hidden = false;
+  }
   function renderVideos() {
+    rawNote();
     const names = [...new Set(D.videos.map((v) => v.guest))];
     $("filter").innerHTML = `<option value="">כל האורחים (${D.videos.length})</option>` + names.map((n) => `<option>${esc(n)}</option>`).join("");
     $("filter").hidden = !D.videos.length;
