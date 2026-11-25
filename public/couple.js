@@ -41,7 +41,7 @@ ${D.guestLink}
     $("wa").href = "https://wa.me/?text=" + encodeURIComponent(message());
     $("copy-link").onclick = () => copy(D.guestLink);
     $("copy-msg").onclick = () => copy(message());
-    $("inv-sum").textContent = D.inviteeCount ? `שמורים ${D.inviteeCount} מוזמנים.` : "";
+    loadInvitees();
     renderVideos(); renderEdits(); renderSizes(); drawSign();
   }
   function fail(t) { $("loading").hidden = true; $("error").hidden = false; $("err-text").textContent = t; }
@@ -154,17 +154,39 @@ ${D.guestLink}
       else { if (!window.XLSX) throw 0; const wb = XLSX.read(await f.arrayBuffer()); rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false }); }
       parsed = parseRows(rows);
       if (!parsed.length) { $("inv-sum").textContent = "לא מצאנו בקובץ עמודה של מספרי טלפון. בדקו את הקובץ ונסו שוב."; return; }
+      $("inv-head").innerHTML = "<th>שם</th><th>טלפון</th>";
       $("inv-rows").innerHTML = parsed.map((r) => `<tr><td>${esc(r.name || "—")}</td><td class="ph">${esc(r.phone)}</td></tr>`).join("");
       $("inv-tbl").hidden = false; $("inv-actions").hidden = false;
       $("inv-sum").textContent = `נמצאו ${parsed.length} מוזמנים בקובץ. בדקו את הרשימה ולחצו "שמירת הרשימה".`;
     } catch { $("inv-sum").textContent = "לא הצלחנו לקרוא את הקובץ. נסו לשמור אותו מאקסל כ־CSV ולהעלות שוב."; }
   };
+  // Saved list with a personal WhatsApp button per guest (sent from the couple's own WhatsApp)
+  function firstName(n) { const w = String(n || "").trim().split(/\s+/); return !w[0] ? "" : w[0] === "משפחת" ? w.slice(0, 2).join(" ") : w[0]; }
+  function waNum(p) { let d = String(p).replace(/\D/g, ""); if (d.startsWith("972")) return d; if (d.startsWith("0")) d = d.slice(1); return "972" + d; }
+  const personal = (n) => message().replace(/^היי,/, firstName(n) ? `היי ${firstName(n)},` : "היי,");
+  async function loadInvitees() {
+    let list = [];
+    try { list = (await api("/api/couple/invitees")).invitees; } catch {}
+    if (!list.length) { $("inv-sum").textContent = ""; return; }
+    const sent = list.filter((x) => x.status === "sent").length;
+    $("inv-sum").textContent = `${list.length} מוזמנים ברשימה · ${sent} קיבלו הודעה`;
+    $("inv-head").innerHTML = "<th>שם</th><th>טלפון</th><th></th>";
+    $("inv-rows").innerHTML = list.map((x) => `<tr><td>${esc(x.name || "—")}</td><td class="ph">${esc(x.phone)}</td>
+      <td><a class="wa-one${x.status === "sent" ? " sent" : ""}" data-id="${x.id}" target="_blank" rel="noopener"
+        href="https://wa.me/${waNum(x.phone)}?text=${encodeURIComponent(personal(x.name))}">${x.status === "sent" ? "✓ נשלח" : "שליחה"}</a></td></tr>`).join("");
+    $("inv-tbl").hidden = false; $("inv-actions").hidden = true;
+    $("inv-rows").querySelectorAll("a.wa-one").forEach((a) => (a.onclick = () => {
+      a.classList.add("sent"); a.textContent = "✓ נשלח";
+      api(`/api/couple/invitees/${a.dataset.id}/sent`, { method: "POST" }).then(() => setTimeout(loadInvitees, 1500)).catch(() => {});
+    }));
+  }
+
   $("inv-save").onclick = async () => {
     $("inv-save").disabled = true;
     try {
       const r = await api("/api/couple/invitees", { method: "PUT", body: { invitees: parsed } });
       $("inv-sum").textContent = `נשמרו ${r.saved} מוזמנים.` + (r.saved < parsed.length ? ` ${parsed.length - r.saved} שורות דילגנו עליהן: מספר כפול או לא תקין.` : "");
-      $("inv-actions").hidden = true; toast("הרשימה נשמרה");
+      $("inv-actions").hidden = true; toast("הרשימה נשמרה"); loadInvitees();
     } catch (err) { toast(err.message); } finally { $("inv-save").disabled = false; }
   };
 

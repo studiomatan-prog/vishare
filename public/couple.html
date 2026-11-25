@@ -62,6 +62,8 @@ td.ph{direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
 .vid{background:var(--soft);border-radius:12px;overflow:hidden;display:grid}
 .vid video{width:100%;aspect-ratio:4/5;object-fit:cover;background:#000;display:block}
 .vid .meta{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:6px 8px;font-size:13px}
+.wa-one{text-decoration:none;font-weight:700;font-size:14px;color:#fff;background:var(--wa);border-radius:999px;padding:4px 12px;white-space:nowrap;display:inline-block}
+.wa-one.sent{background:var(--soft);color:var(--ok)}
 .vid .meta a{color:var(--plum);font-weight:700;text-decoration:none}
 .empty{text-align:center;color:var(--muted);padding:24px 10px}
 .center{text-align:center;padding-top:50px}
@@ -104,10 +106,10 @@ td.ph{direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
     <p class="muted small">העלו קובץ אקסל עם עמודת שם ועמודת טלפון, למשל את רשימת אישורי ההגעה. נשתמש בה כדי לשלוח לכל מוזמן הודעה אישית.</p>
     <label class="btn ghost" for="xl"><input id="xl" type="file" accept=".xlsx,.xls,.csv" class="sr">העלאת קובץ אקסל / CSV</label>
     <p class="small" id="inv-sum"></p>
-    <div class="tbl" id="inv-tbl" hidden><table><thead><tr><th>שם</th><th>טלפון</th></tr></thead><tbody id="inv-rows"></tbody></table></div>
+    <div class="tbl" id="inv-tbl" hidden><table><thead><tr id="inv-head"><th>שם</th><th>טלפון</th></tr></thead><tbody id="inv-rows"></tbody></table></div>
     <div class="row" id="inv-actions" hidden><button class="btn" id="inv-save">שמירת הרשימה</button></div>
     <button class="btn wa" id="send-all" disabled>שליחה לכולם בוואטסאפ</button>
-    <div class="note"><span>⏳</span><span>השליחה האוטומטית תופעל בקרוב, ונעדכן אתכם. בינתיים אפשר לשתף את ההודעה בקבוצות עם הכפתור למעלה.</span></div>
+    <div class="note"><span>⏳</span><span>השליחה האוטומטית לכולם תופעל בקרוב. בינתיים אפשר לשלוח לכל מוזמן בנפרד מהוואטסאפ שלכם, עם כפתור "שליחה" ליד השם.</span></div>
   </section>
 
   <section class="card">

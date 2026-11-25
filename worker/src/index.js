@@ -106,8 +106,13 @@ async function api(req, env, url) {
       return json({ saved: list.length });
     }
     if (m === "GET" && p === "/api/couple/invitees") {
-      const rows = await db(env, "GET", `invitees?event_id=eq.${ev.id}&select=name,phone,status,sent_at&order=created_at.asc`);
+      const rows = await db(env, "GET", `invitees?event_id=eq.${ev.id}&select=id,name,phone,status,sent_at&order=created_at.asc`);
       return json({ invitees: rows });
+    }
+    // Couple sent the invite by hand from their own WhatsApp: remember it
+    if (m === "POST" && (r = p.match(/^\/api\/couple\/invitees\/([0-9a-f-]{36})\/sent$/))) {
+      await db(env, "PATCH", `invitees?id=eq.${r[1]}&event_id=eq.${ev.id}`, { body: { status: "sent", sent_at: new Date().toISOString() } });
+      return json({ ok: true });
     }
   }
 
