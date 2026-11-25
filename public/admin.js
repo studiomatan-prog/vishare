@@ -100,7 +100,7 @@
         <div class="qr"><div class="box" id="qrbox"></div><div class="acts"><button class="btn sm" id="qr-dl">הורדת QR (PNG)</button></div></div></div>
       <div class="card"><h2>לינק פרטי לזוג</h2>
         ${freshCoupleLink ? `<div class="linkrow"><span>${esc(freshCoupleLink)}</span><button class="btn sm ghost" data-copy="${esc(freshCoupleLink)}">העתקה</button></div><p class="sub">שמרו או שלחו לזוג עכשיו. מטעמי אבטחה הלינק לא נשמר במערכת.</p>`
-          : `<p class="sub">הלינק לזוג מוצג רק כשהוא נוצר. אם צריך, יוצרים חדש, והישן מפסיק לעבוד.</p>`}
+          : `<p class="sub">הלינק לזוג מוצג רק ברגע שיוצרים אותו. אם הוא הלך לאיבוד, יוצרים חדש. הלינק לאורחים לא מושפע מזה.</p>`}
         <div class="acts"><button class="btn sm ghost" id="new-couple">יצירת לינק חדש לזוג</button></div></div>
       <div class="card"><h2>מועד סגירת ההעלאה</h2>
         <div class="acts"><input type="datetime-local" id="close-at" value="${closesLocal}" style="padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg)"><button class="btn sm" id="close-save">שמירה</button><button class="btn sm ghost" id="close-now">סגירה עכשיו</button></div></div>
@@ -123,7 +123,7 @@
     };
     d.querySelectorAll("[data-copy]").forEach((b) => (b.onclick = () => copy(b.dataset.copy)));
     $("new-couple").onclick = async () => {
-      if (!confirm("ליצור לינק חדש לזוג? הלינק הקודם יפסיק לעבוד.")) return;
+      if (!confirm("ליצור לינק חדש לזוג?\n\nאם כבר שלחתם לזוג לינק קודם, הוא יפסיק לעבוד.\nהלינק לאורחים לא משתנה.")) return;
       try { const r = await api(`/api/admin/events/${slug}/couple-link`, { method: "POST" }); openEvent(slug, r.coupleLink); } catch (err) { toast(err.message); }
     };
     const saveClose = async (iso) => {
