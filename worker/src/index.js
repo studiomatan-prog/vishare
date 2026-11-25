@@ -297,8 +297,9 @@ async function ownVideo(env, guest, id) {
   return v;
 }
 function requireAdmin(req, env) {
-  const tok = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
-  if (!env.ADMIN_TOKEN || tok !== env.ADMIN_TOKEN) throw new HttpError(401, "אין הרשאה");
+  const tok = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  const want = String(env.ADMIN_TOKEN || "").trim(); // tolerate a pasted trailing space/newline
+  if (!want || tok !== want) throw new HttpError(401, "אין הרשאה");
 }
 
 function normPhone(p) {
