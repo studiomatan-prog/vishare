@@ -261,8 +261,13 @@ async function api(req, env, url) {
 
     // System check: Supabase + presigned upload to R2, server-side (no CORS involved)
     if (m === "GET" && p === "/api/admin/selftest") {
-      const out = { supabase: null, r2Put: null, r2Head: null, cors: null };
+      const out = { supabase: null, schema: null, r2Put: null, r2Head: null, cors: null };
       try { await db(env, "GET", "events?select=id&limit=1"); out.supabase = "ok"; } catch (e) { out.supabase = String(e.message).slice(0, 300); }
+      try {
+        await db(env, "GET", "events?select=raw_backed_up_at,raw_purged_at&limit=1");
+        await db(env, "GET", "invitees?select=id&limit=1");
+        out.schema = "ok";
+      } catch (e) { out.schema = String(e.message).slice(0, 300); }
       const key = `selftest/${Date.now()}.txt`;
       try {
         const u = await presignR2(env, "PUT", key, 300);

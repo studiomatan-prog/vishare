@@ -63,7 +63,7 @@
     try {
       const r = await api("/api/admin/selftest");
       const row = (n, v) => `<div style="display:flex;justify-content:space-between;gap:12px"><span>${n}</span><b style="color:${v === "ok" ? "var(--ok)" : "var(--pink)"};direction:ltr;overflow-wrap:anywhere">${v === "ok" ? "✓ תקין" : esc(v)}</b></div>`;
-      box.innerHTML = "<h2>בדיקת מערכת</h2>" + row("בסיס נתונים (Supabase)", r.supabase) + row("העלאה ל־R2 (מפתחות)", r.r2Put) + row("הקובץ נשמר ב־R2", r.r2Head) + row("הרשאת דפדפן (CORS)", r.cors);
+      box.innerHTML = "<h2>בדיקת מערכת</h2>" + row("בסיס נתונים (Supabase)", r.supabase) + row("טבלאות מעודכנות (מוזמנים, גיבוי)", r.schema) + row("העלאה ל־R2 (מפתחות)", r.r2Put) + row("הקובץ נשמר ב־R2", r.r2Head) + row("הרשאת דפדפן (CORS)", r.cors);
     } catch (err) { box.innerHTML = `<p class="sub">${esc(err.message)}</p>`; }
   };
 
