@@ -157,7 +157,11 @@ ${D.guestLink}
       $("inv-head").innerHTML = "<th>שם</th><th>טלפון</th>";
       $("inv-rows").innerHTML = parsed.map((r) => `<tr><td>${esc(r.name || "—")}</td><td class="ph">${esc(r.phone)}</td></tr>`).join("");
       $("inv-tbl").hidden = false; $("inv-actions").hidden = false;
-      $("inv-sum").textContent = `נמצאו ${parsed.length} מוזמנים בקובץ. בדקו את הרשימה ולחצו "שמירת הרשימה".`;
+      const q = D.event.invitedCount;
+      $("inv-sum").textContent = q && parsed.length > q
+        ? `נמצאו ${parsed.length} מוזמנים בקובץ, והחבילה שלכם כוללת עד ${q}. הסירו מוזמנים מהקובץ, או פנו ל־LOCO כדי להגדיל את החבילה.`
+        : `נמצאו ${parsed.length} מוזמנים בקובץ${q ? ` (החבילה כוללת עד ${q})` : ""}. בדקו את הרשימה ולחצו "שמירת הרשימה".`;
+      $("inv-actions").hidden = !!(q && parsed.length > q);
     } catch { $("inv-sum").textContent = "לא הצלחנו לקרוא את הקובץ. נסו לשמור אותו מאקסל כ־CSV ולהעלות שוב."; }
   };
   // Saved list with a personal WhatsApp button per guest (sent from the couple's own WhatsApp)
@@ -169,7 +173,8 @@ ${D.guestLink}
     try { list = (await api("/api/couple/invitees")).invitees; } catch {}
     if (!list.length) { $("inv-sum").textContent = ""; return; }
     const sent = list.filter((x) => x.status === "sent").length;
-    $("inv-sum").textContent = `${list.length} מוזמנים ברשימה · ${sent} קיבלו הודעה`;
+    const q = D.event.invitedCount;
+    $("inv-sum").textContent = `${list.length}${q ? ` מתוך ${q}` : ""} מוזמנים ברשימה · ${sent} קיבלו הודעה`;
     $("inv-head").innerHTML = "<th>שם</th><th>טלפון</th><th></th>";
     $("inv-rows").innerHTML = list.map((x) => `<tr><td>${esc(x.name || "—")}</td><td class="ph">${esc(x.phone)}</td>
       <td><a class="wa-one${x.status === "sent" ? " sent" : ""}" data-id="${x.id}" target="_blank" rel="noopener"

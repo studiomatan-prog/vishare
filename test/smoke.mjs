@@ -91,6 +91,11 @@ r = await call("GET", "/api/couple/invitees", null, ctok);
 assert(r.data.invitees.length === 1 && r.data.invitees[0].phone === "0533333333", "new upload replaces the list");
 const iid = (await call("GET", "/api/couple/invitees", null, ctok)).data.invitees[0].id;
 assert((await call("POST", `/api/couple/invitees/${iid}/sent`, null, ctok)).status === 200 && tables.invitees.find((x) => x.id === iid).status === "sent", "couple marks invitee as sent");
+tables.events.find((e) => e.slug === "dana-david").invited_count = 2;
+r = await call("PUT", "/api/couple/invitees", { invitees: [{ phone: "0501000001" }, { phone: "0501000002" }, { phone: "0501000003" }] }, ctok);
+assert(r.status === 400 && r.data.error.includes("עד 2"), "guest list over the package quota is refused");
+assert((await call("GET", "/api/couple/invitees", null, ctok)).data.invitees.length === 1, "refused upload keeps the previous list");
+tables.events.find((e) => e.slug === "dana-david").invited_count = 0;
 // --- raw video retention ---
 r = await call("POST", "/api/admin/events", { slug: "old", couple_names: "ישן", event_date: "2026-01-01", upload_closes_at: "2026-01-03T18:00:00Z" }, "admin");
 const oldTok = (await call("POST", "/api/events/old/join", { name: "x", phone: "0509999999" })).data.token;

@@ -101,9 +101,13 @@ async function api(req, env, url) {
       const list = (Array.isArray(b.invitees) ? b.invitees : []).slice(0, 3000).map((x) => ({
         event_id: ev.id, name: String(x.name || "").trim().slice(0, 80) || null, phone: normPhone(x.phone),
       })).filter((x) => x.phone && !seen.has(x.phone) && seen.add(x.phone));
+      // The package's message quota (events.invited_count). 0 = no limit.
+      const quota = Number(ev.invited_count || 0);
+      if (quota && list.length > quota)
+        throw new HttpError(400, `החבילה שלכם כוללת הודעות לעד ${quota} מוזמנים, ובקובץ יש ${list.length}. הסירו מוזמנים מהקובץ, או פנו ל־LOCO כדי להגדיל את החבילה.`);
       await db(env, "DELETE", `invitees?event_id=eq.${ev.id}`);
       if (list.length) await db(env, "POST", "invitees", { body: list });
-      return json({ saved: list.length });
+      return json({ saved: list.length, quota });
     }
     if (m === "GET" && p === "/api/couple/invitees") {
       const rows = await db(env, "GET", `invitees?event_id=eq.${ev.id}&select=id,name,phone,status,sent_at&order=created_at.asc`);

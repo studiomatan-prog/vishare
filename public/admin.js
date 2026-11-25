@@ -112,6 +112,9 @@
         <div class="acts"><button class="btn sm ghost" id="new-couple">יצירת לינק חדש לזוג</button></div></div>
       <div class="card"><h2>מועד סגירת ההעלאה</h2>
         <div class="acts"><input type="datetime-local" id="close-at" value="${closesLocal}" style="padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg)"><button class="btn sm" id="close-save">שמירה</button><button class="btn sm ghost" id="close-now">סגירה עכשיו</button></div></div>
+      <div class="card"><h2>מכסת הודעות</h2>
+        <p class="sub">כמה מוזמנים הזוג יכול להעלות לרשימה ולשלוח להם הודעה. 0 = בלי הגבלה.</p>
+        <div class="acts"><input type="number" min="0" id="quota" value="${Number(e.invited_count || 0)}" style="width:120px;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg)"><button class="btn sm" id="quota-save">שמירה</button></div></div>
       <div class="card"><h2>גיבוי ומחיקת הגולמיים</h2>${e.raw_purged_at
         ? `<p>הסרטונים הגולמיים נמחקו ב־${fmtDT(e.raw_purged_at)}. האירוע, הלינקים והסרטונים הערוכים נשמרים.</p>`
         : `<p>הסרטונים הגולמיים יימחקו אוטומטית ב־<b>${fmtDT(rawDel(e))}</b>, 30 יום אחרי סגירת ההעלאה.</p>
@@ -146,6 +149,9 @@
     };
     $("close-save").onclick = () => { const v = $("close-at").value; if (v) saveClose(new Date(v).toISOString()); };
     $("close-now").onclick = () => { if (confirm("לסגור את ההעלאה לאירוע עכשיו?")) saveClose(new Date().toISOString()); };
+    $("quota-save").onclick = async () => {
+      try { await api(`/api/admin/events/${slug}`, { method: "PATCH", body: { invited_count: Number($("quota").value || 0) } }); toast("המכסה עודכנה"); await load(); openEvent(slug); } catch (err) { toast(err.message); }
+    };
     const markBackup = async (undo) => {
       try { await api(`/api/admin/events/${slug}/backed-up`, { method: "POST", body: { undo } }); toast(undo ? "הסימון בוטל" : "סומן כמגובה"); await load(); openEvent(slug); } catch (err) { toast(err.message); }
     };

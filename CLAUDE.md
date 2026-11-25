@@ -19,9 +19,12 @@ Owner: LOCO GROUP (Matan & Jenia). All user-facing text is Hebrew, RTL.
 Guest page (/e/<slug>), couple page (/couple#token: link+message, WhatsApp share, sign PDF/QR, Excel guest list -> invitees table, all guest videos, edited videos), admin page (/admin: events, create, links + QR, close time, videos by guest, download, delete).
 Supabase note: tables needed explicit `grant ... to service_role` (project created without auto-grant).
 
+## Message quota
+events.invited_count = how many invitees the couple's package allows (0 = unlimited). Enforced on PUT /api/couple/invitees.
+
 ## Retention
 Raw guest videos are deleted by the daily cron 30 days after uploads close, ONLY if LOCO marked the event as backed up
 (events.raw_backed_up_at). Events, links and edited videos (edits) are never deleted.
 
 ## Not built yet
-WhatsApp Cloud API sending + reminders, auto-edit pipeline with approval flow, resumable/multipart uploads.
+WhatsApp Cloud API sending (invite to all invitees not yet sent; end-of-event + morning reminders only to guests who joined; 'video ready'; couple raw-deletion warning) — templates drafted in chat, auto-edit pipeline with approval flow, resumable/multipart uploads.
