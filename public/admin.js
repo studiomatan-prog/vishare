@@ -98,7 +98,7 @@
       <div class="card"><h2>לינק לאורחים</h2>
         <div class="linkrow"><span>${esc(guestLink(slug))}</span><button class="btn sm ghost" data-copy="${esc(guestLink(slug))}">העתקה</button></div>
         <div class="qr"><div class="box" id="qrbox"></div><div class="acts"><button class="btn sm" id="qr-dl">הורדת QR (PNG)</button></div></div></div>
-      <div class="card"><h2>לינק פרטי לזוג <span class="sub">(דף הזוג עוד בבנייה)</span></h2>
+      <div class="card"><h2>לינק פרטי לזוג</h2>
         ${freshCoupleLink ? `<div class="linkrow"><span>${esc(freshCoupleLink)}</span><button class="btn sm ghost" data-copy="${esc(freshCoupleLink)}">העתקה</button></div><p class="sub">שמרו או שלחו לזוג עכשיו. מטעמי אבטחה הלינק לא נשמר במערכת.</p>`
           : `<p class="sub">הלינק לזוג מוצג רק כשהוא נוצר. אם צריך, יוצרים חדש, והישן מפסיק לעבוד.</p>`}
         <div class="acts"><button class="btn sm ghost" id="new-couple">יצירת לינק חדש לזוג</button></div></div>

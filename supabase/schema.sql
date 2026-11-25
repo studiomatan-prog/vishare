@@ -67,3 +67,21 @@ alter table events enable row level security;
 alter table guests enable row level security;
 alter table videos enable row level security;
 alter table edits  enable row level security;
+
+-- Couple's guest list (from Excel), for WhatsApp invites and reminders
+create table if not exists invitees (
+  id         uuid primary key default gen_random_uuid(),
+  event_id   uuid not null references events(id) on delete cascade,
+  name       text,
+  phone      text not null,
+  status     text not null default 'pending' check (status in ('pending','sent','failed','opted_out')),
+  sent_at    timestamptz,
+  created_at timestamptz not null default now()
+);
+create index if not exists invitees_event_idx on invitees(event_id);
+alter table invitees enable row level security;
+
+-- The project was created without automatic API grants, so the Worker's role needs them explicitly.
+grant usage on schema public to service_role;
+grant all on all tables in schema public to service_role;
+alter default privileges in schema public grant all on tables to service_role;

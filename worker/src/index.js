@@ -56,6 +56,54 @@ async function api(req, env, url) {
     return json({ token, guest: { id: g.id, name: g.name } });
   }
 
+  // ---- Couple (private link: /couple#<token>) ----
+  if (p.startsWith("/api/couple")) {
+    const ev = await eventFromCoupleAuth(req, env);
+
+    if (m === "GET" && p === "/api/couple") {
+      const rows = await db(env, "GET",
+        `videos?event_id=eq.${ev.id}&status=eq.uploaded&select=id,kind,moment,created_at,size_bytes,r2_key,guest_id,guests(name)&order=created_at.asc`);
+      const videos = await Promise.all(rows.map(async (v, i) => {
+        const ext = v.r2_key.split(".").pop();
+        return {
+          id: v.id, kind: v.kind, moment: v.moment, createdAt: v.created_at, guest: v.guests?.name || "אורח",
+          url: await presignR2(env, "GET", v.r2_key, 6 * 3600),
+          downloadUrl: await presignR2(env, "GET", v.r2_key, 6 * 3600,
+            { "response-content-disposition": `attachment; filename="${ev.slug}-${String(i + 1).padStart(3, "0")}.${ext}"` }),
+        };
+      }));
+      const edits = await db(env, "GET", `edits?event_id=eq.${ev.id}&status=in.(approved,sent)&select=id,moment,r2_key,status&order=created_at.asc`);
+      const editsOut = await Promise.all(edits.filter((e) => e.r2_key).map(async (e) => ({
+        id: e.id, moment: e.moment,
+        url: await presignR2(env, "GET", e.r2_key, 6 * 3600),
+        downloadUrl: await presignR2(env, "GET", e.r2_key, 6 * 3600, { "response-content-disposition": `attachment; filename="${ev.slug}-${e.id.slice(0, 6)}.mp4"` }),
+      })));
+      const inv = await db(env, "GET", `invitees?event_id=eq.${ev.id}&select=id`);
+      return json({
+        event: { ...publicEvent(ev), package: ev.package, invitedCount: ev.invited_count },
+        guestLink: `${url.origin}/e/${ev.slug}`,
+        stats: { videos: videos.length, guests: new Set(rows.map((r) => r.guest_id)).size, sizeBytes: rows.reduce((a, r) => a + (r.size_bytes || 0), 0) },
+        videos, edits: editsOut, inviteeCount: inv.length,
+      });
+    }
+
+    // Guest list from Excel/CSV (replaces the previous list)
+    if (m === "PUT" && p === "/api/couple/invitees") {
+      const b = await readJson(req);
+      const seen = new Set();
+      const list = (Array.isArray(b.invitees) ? b.invitees : []).slice(0, 3000).map((x) => ({
+        event_id: ev.id, name: String(x.name || "").trim().slice(0, 80) || null, phone: normPhone(x.phone),
+      })).filter((x) => x.phone && !seen.has(x.phone) && seen.add(x.phone));
+      await db(env, "DELETE", `invitees?event_id=eq.${ev.id}`);
+      if (list.length) await db(env, "POST", "invitees", { body: list });
+      return json({ saved: list.length });
+    }
+    if (m === "GET" && p === "/api/couple/invitees") {
+      const rows = await db(env, "GET", `invitees?event_id=eq.${ev.id}&select=name,phone,status,sent_at&order=created_at.asc`);
+      return json({ invitees: rows });
+    }
+  }
+
   // Everything below needs a guest token
   if (p.startsWith("/api/me")) {
     const guest = await guestFromAuth(req, env);
@@ -284,6 +332,13 @@ function publicEvent(ev) {
 }
 function isOpen(ev) { return new Date(ev.upload_closes_at).getTime() > Date.now(); }
 
+async function eventFromCoupleAuth(req, env) {
+  const tok = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  if (!tok) throw new HttpError(401, "הלינק לא תקין. בקשו מ־LOCO לינק חדש");
+  const [ev] = await db(env, "GET", `events?couple_token_hash=eq.${await sha256(tok)}&select=*`);
+  if (!ev) throw new HttpError(401, "הלינק לא תקין או שהוחלף. בקשו מ־LOCO לינק חדש");
+  return ev;
+}
 async function guestFromAuth(req, env) {
   const tok = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
   if (!tok) throw new HttpError(401, "צריך להיכנס לאירוע מחדש");

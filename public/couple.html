@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#B8406F">
+<title>VISHARE · דף הזוג</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Rubik:wght@500;700;800&family=Assistant:wght@400;600;700&display=swap">
+<style>
+:root{
+  --grad:linear-gradient(100deg,#8E3F9E 0%,#E5446F 55%,#F6994C 100%);
+  --bg:#FBF7FA; --surface:#FFFFFF; --soft:#F5ECF4; --ink:#2A1730; --muted:#75667A; --line:#ECE1EC;
+  --plum:#8E3F9E; --pink:#D93D67; --orange:#D9762E; --ok:#2E8A57; --wa:#1F9D55;
+  --wordmark:"Oswald","Arial Narrow",sans-serif; --display:"Rubik","Arial Hebrew",Arial,sans-serif; --body:"Assistant","Arial Hebrew",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#150D18; --surface:#211625; --soft:#2B1D30; --ink:#F6EEF7; --muted:#B5A4BA; --line:#3A2A3F;
+  --plum:#D79DE6; --pink:#FF7598; --orange:#FFAE6B; --ok:#6CCB93; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;padding-bottom:env(safe-area-inset-bottom,0px)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.bar{background:var(--grad);color:#fff;padding-top:env(safe-area-inset-top,0px)}
+.bar .in{max-width:760px;margin:0 auto;height:58px;display:flex;justify-content:center;align-items:center;gap:8px;direction:ltr}
+.bar svg{width:36px;height:25px}.bar b{font-family:var(--wordmark);font-weight:500;font-size:26px}
+main{max-width:760px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-right,0px)) 60px max(16px,env(safe-area-inset-left,0px));display:grid;gap:18px}
+.kind{font-size:13px;font-weight:700;color:var(--muted)}
+h1{font-family:var(--display);font-weight:800;font-size:32px;line-height:1.1;margin:2px 0;color:var(--orange)}
+h2{font-family:var(--display);font-weight:700;font-size:21px;margin:0}
+p{margin:0}.muted{color:var(--muted)}.small{font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+.stat b{display:block;font-family:var(--wordmark);font-weight:600;font-size:28px;color:var(--plum);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;display:grid;gap:12px;min-width:0}
+.linkrow{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--soft);border-radius:12px;padding:8px 8px 8px 12px;font-weight:700;color:var(--plum)}
+.linkrow span{direction:ltr;overflow-wrap:anywhere;min-width:0}
+.msg{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding:12px 14px;font-size:15px;margin:0;font-family:var(--body)}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 150px}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:16px;cursor:pointer;background:var(--grad);color:#fff;font-family:var(--display);text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;position:relative}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line)}
+.btn.sm{padding:7px 12px;font-size:14px;flex:none}
+.btn.wa{background:var(--wa)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.sr{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:15px}
+.chip[aria-pressed="true"]{border-color:var(--plum);background:var(--soft);color:var(--plum)}
+.sign-wrap{display:grid;place-items:center;background:var(--soft);border-radius:16px;padding:16px}
+#sign{width:min(260px,100%);height:auto;border-radius:8px;box-shadow:0 8px 24px rgba(60,20,70,.2);background:#fff}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px;max-height:280px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:right}
+th{font-size:12px;color:var(--muted);position:sticky;top:0;background:var(--surface)}
+td.ph{direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.note{display:flex;gap:10px;background:var(--soft);border-radius:12px;padding:10px 12px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.vid{background:var(--soft);border-radius:12px;overflow:hidden;display:grid}
+.vid video{width:100%;aspect-ratio:4/5;object-fit:cover;background:#000;display:block}
+.vid .meta{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:6px 8px;font-size:13px}
+.vid .meta a{color:var(--plum);font-weight:700;text-decoration:none}
+.empty{text-align:center;color:var(--muted);padding:24px 10px}
+.center{text-align:center;padding-top:50px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;z-index:30;max-width:90vw;text-align:center}
+</style>
+</head>
+<body>
+<header class="bar"><div class="in"><svg viewBox="0 0 38 26" aria-hidden="true"><rect width="27" height="26" rx="6" fill="#fff"/><path d="M29 9.5 38 4v18l-9-5.5z" fill="#fff"/><g fill="#E5446F"><circle cx="7.5" cy="9" r="2.6"/><circle cx="7.5" cy="17" r="2.6"/><circle cx="19" cy="13" r="2.6"/></g><path d="M7.5 9 19 13 7.5 17" stroke="#E5446F" stroke-width="1.8" fill="none"/></svg><b>VISHARE</b></div></header>
+
+<main>
+<p class="center muted" id="loading">טוען…</p>
+<div class="center" id="error" hidden><h2>הלינק לא עובד</h2><p class="muted" id="err-text" style="margin-top:8px"></p></div>
+
+<div id="app" hidden style="display:grid;gap:18px">
+  <div><div class="kind" id="kind"></div><h1 id="names"></h1><p class="muted" id="where"></p></div>
+  <div class="stats">
+    <div class="stat"><b id="st-guests">0</b><span>אורחים צילמו</span></div>
+    <div class="stat"><b id="st-videos">0</b><span>סרטונים</span></div>
+    <div class="stat"><b id="st-close" style="font-size:17px;line-height:1.25;white-space:pre-line;padding:4px 0"></b><span>ההעלאה נסגרת</span></div>
+  </div>
+
+  <section class="card">
+    <h2>הזמינו את האורחים לצלם</h2>
+    <div class="linkrow"><span id="link"></span><button class="btn ghost sm" id="copy-link">העתקה</button></div>
+    <p class="muted small">שלחו את ההודעה בקבוצות ובוואטסאפ יום לפני האירוע. אפשר לערוך אותה לפני השליחה.</p>
+    <pre class="msg" id="msg"></pre>
+    <div class="row"><button class="btn ghost" id="copy-msg">העתקת ההודעה</button><a class="btn wa" id="wa" target="_blank" rel="noopener">שיתוף בוואטסאפ</a></div>
+  </section>
+
+  <section class="card">
+    <h2>QR לשולחנות</h2>
+    <p class="muted small">שלט מוכן לדפוס עם השמות שלכם. האורחים סורקים ונכנסים ישר לצילום.</p>
+    <div class="chips" id="sizes"></div>
+    <div class="sign-wrap"><canvas id="sign" aria-label="תצוגה מקדימה של השלט"></canvas></div>
+    <div class="row"><button class="btn" id="pdf">הורדת PDF לדפוס</button><button class="btn ghost" id="png">הורדת QR בלבד</button></div>
+  </section>
+
+  <section class="card">
+    <h2>רשימת המוזמנים</h2>
+    <p class="muted small">העלו קובץ אקסל עם עמודת שם ועמודת טלפון, למשל את רשימת אישורי ההגעה. נשתמש בה כדי לשלוח לכל מוזמן הודעה אישית.</p>
+    <label class="btn ghost" for="xl"><input id="xl" type="file" accept=".xlsx,.xls,.csv" class="sr">העלאת קובץ אקסל / CSV</label>
+    <p class="small" id="inv-sum"></p>
+    <div class="tbl" id="inv-tbl" hidden><table><thead><tr><th>שם</th><th>טלפון</th></tr></thead><tbody id="inv-rows"></tbody></table></div>
+    <div class="row" id="inv-actions" hidden><button class="btn" id="inv-save">שמירת הרשימה</button></div>
+    <button class="btn wa" id="send-all" disabled>שליחה לכולם בוואטסאפ</button>
+    <div class="note"><span>⏳</span><span>השליחה האוטומטית תופעל בקרוב, ונעדכן אתכם. בינתיים אפשר לשתף את ההודעה בקבוצות עם הכפתור למעלה.</span></div>
+  </section>
+
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2>הסרטונים מהאורחים</h2><select id="filter" style="padding:6px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface)"></select></div>
+    <div class="grid" id="videos"></div>
+  </section>
+
+  <section class="card">
+    <h2>הסרטונים הערוכים</h2>
+    <div class="grid" id="edits"></div>
+  </section>
+</div>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="/couple.js"></script>
+</body>
+</html>

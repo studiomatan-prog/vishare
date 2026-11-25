@@ -1,7 +1,7 @@
 // Smoke test for the Worker API with an in-memory fake of Supabase REST and R2.
 import worker from "../worker/src/index.js";
 
-const tables = { events: [], guests: [], videos: [], edits: [] };
+const tables = { events: [], guests: [], videos: [], edits: [], invitees: [] };
 const r2 = new Map();
 let n = 0;
 const uuid = () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`;
@@ -11,11 +11,16 @@ globalThis.fetch = async (url, init = {}) => {
   const table = u.pathname.split("/").pop();
   const rows = tables[table];
   const filters = [...u.searchParams].filter(([k]) => !["select", "order"].includes(k));
-  const match = (r) => filters.every(([k, v]) => String(r[k]) === v.replace(/^eq\./, ""));
+  const match = (r) => filters.every(([k, v]) => v.startsWith("in.(") ? v.slice(4, -1).split(",").includes(String(r[k])) : String(r[k]) === v.replace(/^eq\./, ""));
   const method = init.method || "GET";
   const ok = (d) => new Response(JSON.stringify(d), { status: 200 });
   if (method === "GET") return ok(rows.filter(match).map((r) => (table === "videos" ? { ...r, guests: tables.guests.find((g) => g.id === r.guest_id) } : r)));
-  if (method === "POST") { const row = { id: uuid(), created_at: new Date().toISOString(), status: table === "videos" ? "pending" : "pre", ...JSON.parse(init.body) }; rows.push(row); return ok([row]); }
+  if (method === "POST") {
+    const body = JSON.parse(init.body);
+    const made = (Array.isArray(body) ? body : [body]).map((b) => ({ id: uuid(), created_at: new Date().toISOString(), status: table === "videos" ? "pending" : table === "invitees" ? "pending" : "pre", ...b }));
+    rows.push(...made); return ok(made);
+  }
+  if (method === "DELETE") { const gone = rows.filter(match); tables[table] = rows.filter((r) => !match(r)); return ok(gone); }
   if (method === "PATCH") { const b = JSON.parse(init.body); rows.filter(match).forEach((r) => Object.assign(r, b)); return ok(rows.filter(match)); }
 };
 
@@ -71,6 +76,17 @@ await call("POST", `/api/me/uploads/${v2}/complete`, null, tok);
 r = await call("GET", "/api/admin/events/dana-david/videos", null, "admin");
 assert(r.data.videos[0].downloadUrl.includes("response-content-disposition=attachment") && r.data.videos[0].fileName.startsWith("dana-david-001-"), "admin download link with filename");
 assert((await call("DELETE", `/api/admin/videos/${v2}`, null, "admin")).status === 200, "admin deletes a video");
+r = await call("POST", "/api/admin/events/dana-david/couple-link", null, "admin");
+const ctok = r.data.coupleLink.split("#")[1];
+assert((await call("GET", "/api/couple", null, "bad")).status === 401, "couple needs valid token");
+r = await call("GET", "/api/couple", null, ctok);
+assert(r.status === 200 && r.data.event.coupleNames === "דנה ודוד" && r.data.guestLink.endsWith("/e/dana-david") && Array.isArray(r.data.videos), "couple sees event, link and videos");
+assert(!JSON.stringify(r.data).includes("r2_key") && !JSON.stringify(r.data).includes("phone"), "couple response hides keys and guest phones");
+r = await call("PUT", "/api/couple/invitees", { invitees: [{ name: "א", phone: "050-1111111" }, { name: "ב", phone: "0501111111" }, { name: "ג", phone: "abc" }, { name: "ד", phone: "+972 52 222 2222" }] }, ctok);
+assert(r.data.saved === 2, "invitees saved, deduped, invalid dropped");
+r = await call("PUT", "/api/couple/invitees", { invitees: [{ name: "ה", phone: "0533333333" }] }, ctok);
+r = await call("GET", "/api/couple/invitees", null, ctok);
+assert(r.data.invitees.length === 1 && r.data.invitees[0].phone === "0533333333", "new upload replaces the list");
 r = await worker.fetch(new Request("https://vishare.co.il/e/dana-david"), env);
 assert((await r.text()) === "asset:/guest", "guest link serves guest page");
 console.log("ALL PASSED");
