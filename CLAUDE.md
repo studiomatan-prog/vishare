@@ -15,6 +15,10 @@ Owner: LOCO GROUP (Matan & Jenia). All user-facing text is Hebrew, RTL.
 - Run `node test/smoke.mjs` after API changes.
 - Guests only ever see their own videos. Guests can always delete their own videos (file is removed from R2).
 
+## Built
+Guest page (/e/<slug>), admin page (/admin: events, create, links + QR, close time, videos by guest, download, delete).
+Supabase note: tables needed explicit `grant ... to service_role` (project created without auto-grant).
+
 ## Not built yet
-Couple page (link/message copy, WhatsApp share, Excel upload + send-all, QR PDF), admin UI on the real API,
+Couple page (/couple#token: link/message copy, WhatsApp share, Excel upload + send-all, QR PDF),
 WhatsApp Cloud API sending + reminders, auto-edit pipeline with approval flow, resumable/multipart uploads.

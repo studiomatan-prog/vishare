@@ -3,9 +3,9 @@
 
 const enc = new TextEncoder();
 
-export function presignR2(env, method, key, expiresSec = 3600) {
+export function presignR2(env, method, key, expiresSec = 3600, extra = {}) {
   return presign({
-    method, expiresSec,
+    method, expiresSec, extra,
     host: `${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     path: `/${env.R2_BUCKET}/${key.split("/").map(uriEncode).join("/")}`,
     region: "auto",
@@ -14,7 +14,7 @@ export function presignR2(env, method, key, expiresSec = 3600) {
   });
 }
 
-export async function presign({ method, host, path, region, accessKeyId, secret, expiresSec, now = new Date() }) {
+export async function presign({ method, host, path, region, accessKeyId, secret, expiresSec, extra = {}, now = new Date() }) {
   const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, ""); // YYYYMMDDTHHMMSSZ
   const day = amzDate.slice(0, 8);
   const scope = `${day}/${region}/s3/aws4_request`;
@@ -25,6 +25,7 @@ export async function presign({ method, host, path, region, accessKeyId, secret,
     "X-Amz-Date": amzDate,
     "X-Amz-Expires": String(expiresSec),
     "X-Amz-SignedHeaders": "host",
+    ...extra, // e.g. response-content-disposition for downloads
   };
   const query = Object.keys(q).sort().map((k) => `${uriEncode(k)}=${uriEncode(q[k])}`).join("&");
 

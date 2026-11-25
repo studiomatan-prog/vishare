@@ -9,6 +9,7 @@
 |---|---|
 | `public/index.html` | אתר המכירה (vishare.co.il) |
 | `public/guest.html`, `public/guest.js` | דף האורח (vishare.co.il/e/&lt;שם-האירוע&gt;) |
+| `public/admin.html`, `public/admin.js` | ממשק הניהול של LOCO (vishare.co.il/admin) |
 | `worker/src/index.js` | השרת: API לאורחים ולניהול |
 | `worker/src/sigv4.js` | חתימה של קישורי העלאה ישירה ל־R2 |
 | `supabase/schema.sql` | מבנה בסיס הנתונים |
@@ -32,7 +33,11 @@
 
 סודות לא נשמרים בקוד ולא נשלחים בצ'אט.
 
-## יצירת אירוע (עד שממשק הניהול יחובר)
+## יצירת אירוע
+
+בממשק הניהול: vishare.co.il/admin ← כניסה עם ה־ADMIN_TOKEN ← "אירוע חדש".
+
+או בפקודה:
 
 ```
 curl -X POST https://vishare.co.il/api/admin/events \

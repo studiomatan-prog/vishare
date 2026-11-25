@@ -60,6 +60,17 @@ assert((await call("GET", "/api/me/videos", null, tok)).data.videos.length === 0
 assert((await call("POST", "/api/me/uploads", { contentType: "image/jpeg", size: 10 }, tok)).status === 400, "non-video rejected");
 tables.events[0].upload_closes_at = "2000-01-01T00:00:00Z";
 assert((await call("POST", "/api/me/uploads", { contentType: "video/mp4", size: 10 }, tok)).status === 403, "closed event refuses uploads");
+r = await call("PATCH", "/api/admin/events/dana-david", { upload_closes_at: "2099-01-01T00:00:00Z", hacked: 1 }, "admin");
+assert(r.status === 200 && r.data.event.upload_closes_at === "2099-01-01T00:00:00Z" && !("hacked" in tables.events[0]) && !r.data.event.couple_token_hash, "admin updates event (whitelisted fields only)");
+const oldHash = tables.events[0].couple_token_hash;
+r = await call("POST", "/api/admin/events/dana-david/couple-link", null, "admin");
+assert(r.data.coupleLink.includes("/couple#") && tables.events[0].couple_token_hash !== oldHash, "admin regenerates couple link");
+r = await call("POST", "/api/me/uploads", { contentType: "video/mp4", size: 10, fileName: "a.mp4" }, tok);
+const v2 = r.data.videoId; r2.set(tables.videos.find((v) => v.id === v2).r2_key, 10);
+await call("POST", `/api/me/uploads/${v2}/complete`, null, tok);
+r = await call("GET", "/api/admin/events/dana-david/videos", null, "admin");
+assert(r.data.videos[0].downloadUrl.includes("response-content-disposition=attachment") && r.data.videos[0].fileName.startsWith("dana-david-001-"), "admin download link with filename");
+assert((await call("DELETE", `/api/admin/videos/${v2}`, null, "admin")).status === 200, "admin deletes a video");
 r = await worker.fetch(new Request("https://vishare.co.il/e/dana-david"), env);
 assert((await r.text()) === "asset:/guest", "guest link serves guest page");
 console.log("ALL PASSED");

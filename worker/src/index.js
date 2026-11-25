@@ -161,11 +161,47 @@ async function api(req, env, url) {
       const ev = await eventBySlug(env, r[1]);
       const rows = await db(env, "GET",
         `videos?event_id=eq.${ev.id}&status=eq.uploaded&select=id,kind,moment,created_at,size_bytes,r2_key,guests(name,phone)&order=created_at.asc`);
-      const out = await Promise.all(rows.map(async (v) => ({
-        id: v.id, kind: v.kind, moment: v.moment, createdAt: v.created_at, size: v.size_bytes,
-        guest: v.guests, url: await presignR2(env, "GET", v.r2_key, 6 * 3600),
-      })));
-      return json({ event: publicEvent(ev), videos: out });
+      const out = await Promise.all(rows.map(async (v, i) => {
+        const ext = v.r2_key.split(".").pop();
+        const name = `${ev.slug}-${String(i + 1).padStart(3, "0")}-${v.kind === "greeting" ? "greeting" : "clip"}.${ext}`;
+        return {
+          id: v.id, kind: v.kind, moment: v.moment, createdAt: v.created_at, size: v.size_bytes, guest: v.guests,
+          url: await presignR2(env, "GET", v.r2_key, 6 * 3600),
+          downloadUrl: await presignR2(env, "GET", v.r2_key, 6 * 3600,
+            { "response-content-disposition": `attachment; filename="${name}"` }),
+          fileName: name,
+        };
+      }));
+      return json({ event: { ...publicEvent(ev), package: ev.package, invitedCount: ev.invited_count, status: ev.status }, videos: out });
+    }
+
+    // Update event details (closing time, names, venue, status...)
+    if (m === "PATCH" && (r = p.match(/^\/api\/admin\/events\/([a-z0-9-]+)$/))) {
+      const ev = await eventBySlug(env, r[1]);
+      const b = await readJson(req);
+      const allowed = ["couple_names", "event_type", "event_date", "venue", "package", "invited_count", "upload_closes_at", "status"];
+      const patch = Object.fromEntries(Object.entries(b).filter(([k]) => allowed.includes(k)));
+      if (!Object.keys(patch).length) throw new HttpError(400, "אין מה לעדכן");
+      const [up] = await db(env, "PATCH", `events?id=eq.${ev.id}`, { body: patch });
+      const { couple_token_hash, ...rest } = up;
+      return json({ event: rest });
+    }
+
+    // New private link for the couple (the old one stops working)
+    if (m === "POST" && (r = p.match(/^\/api\/admin\/events\/([a-z0-9-]+)\/couple-link$/))) {
+      const ev = await eventBySlug(env, r[1]);
+      const coupleToken = randomToken();
+      await db(env, "PATCH", `events?id=eq.${ev.id}`, { body: { couple_token_hash: await sha256(coupleToken) } });
+      return json({ coupleLink: `${url.origin}/couple#${coupleToken}` });
+    }
+
+    // Remove a video (e.g. inappropriate content)
+    if (m === "DELETE" && (r = p.match(/^\/api\/admin\/videos\/([0-9a-f-]{36})$/))) {
+      const [v] = await db(env, "GET", `videos?id=eq.${r[1]}&select=*`);
+      if (!v || v.status === "deleted") throw new HttpError(404, "הסרטון לא נמצא");
+      await env.VIDEOS.delete(v.r2_key);
+      await db(env, "PATCH", `videos?id=eq.${v.id}`, { body: { status: "deleted", deleted_at: new Date().toISOString() } });
+      return json({ ok: true });
     }
   }
 

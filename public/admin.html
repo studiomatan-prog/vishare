@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>VISHARE ניהול</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Rubik:wght@500;700;800&family=Assistant:wght@400;600;700&display=swap">
+<style>
+:root{
+  --grad:linear-gradient(100deg,#8E3F9E 0%,#E5446F 55%,#F6994C 100%);
+  --bg:#F7F3F7; --surface:#FFFFFF; --soft:#F2E9F2; --ink:#271630; --muted:#73667A; --line:#E9DEEA;
+  --plum:#8E3F9E; --pink:#D93D67; --orange:#C96A22; --ok:#2E8A57;
+  --s-pre:#5B5BD6; --s-pre-bg:#ECECFC; --s-open:#C96A22; --s-open-bg:#FDEFE2; --s-edit:#8E3F9E; --s-edit-bg:#F3E5F6; --s-done:#2E8A57; --s-done-bg:#E3F4EA;
+  --scrim:rgba(20,8,24,.5);
+  --wordmark:"Oswald","Arial Narrow",sans-serif; --display:"Rubik","Arial Hebrew",Arial,sans-serif; --body:"Assistant","Arial Hebrew",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#130C16; --surface:#1F1523; --soft:#2A1D2F; --ink:#F5EDF6; --muted:#B2A2B7; --line:#382A3D;
+  --plum:#D79DE6; --pink:#FF7598; --orange:#FFAE6B; --ok:#6CCB93;
+  --s-pre:#A9A9FF; --s-pre-bg:#262650; --s-open:#FFB27A; --s-open-bg:#45291A; --s-edit:#D79DE6; --s-edit-bg:#3A2140; --s-done:#6CCB93; --s-done-bg:#183A27;
+  --scrim:rgba(0,0,0,.65); color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.top{background:var(--grad);color:#fff;padding-top:env(safe-area-inset-top,0px)}
+.top .in{max-width:1100px;margin:0 auto;padding:12px max(16px,env(safe-area-inset-left,0px));display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:8px;direction:ltr}
+.logo svg{width:34px;height:24px}.logo b{font-family:var(--wordmark);font-weight:500;font-size:24px}.logo small{font-size:11px;letter-spacing:.12em;opacity:.85;align-self:flex-end;margin-bottom:3px}
+.top button{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:10px;padding:6px 12px;cursor:pointer;font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:22px max(16px,env(safe-area-inset-right,0px)) 60px max(16px,env(safe-area-inset-left,0px));display:grid;gap:18px}
+h1{font-family:var(--display);font-weight:800;font-size:26px;margin:0}
+h2{font-family:var(--display);font-weight:700;font-size:19px;margin:0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.sub{color:var(--muted);font-size:14px;margin:2px 0 0}
+.btn{border:0;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;background:var(--grad);color:#fff;font-family:var(--display);white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn.danger{background:var(--surface);color:var(--pink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.kpi span{font-size:13px;color:var(--muted)}
+.kpi b{display:block;font-family:var(--wordmark);font-weight:600;font-size:30px;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;min-width:720px;font-size:15px}
+th{font-size:12px;font-weight:700;color:var(--muted);text-align:right;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+tbody tr{cursor:pointer}tbody tr:hover td{background:var(--soft)}
+td.num{font-family:var(--wordmark);font-variant-numeric:tabular-nums}
+.cname strong{display:block}.cname span{font-size:13px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st-pre{color:var(--s-pre);background:var(--s-pre-bg)}.st-open{color:var(--s-open);background:var(--s-open-bg)}.st-edit{color:var(--s-edit);background:var(--s-edit-bg)}.st-done{color:var(--s-done);background:var(--s-done-bg)}
+.empty{text-align:center;color:var(--muted);padding:30px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:grid;gap:12px}
+.login{max-width:420px;margin:40px auto}
+.f{display:grid;gap:4px}.f label{font-size:13px;font-weight:700}
+.f input,.f select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg)}
+.f small{font-size:12px;color:var(--muted)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.f.full{grid-column:1/-1}
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:20}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:min(640px,100%);background:var(--bg);z-index:21;overflow-y:auto;box-shadow:0 0 40px rgba(0,0,0,.25)}
+.dhead{background:var(--grad);color:#fff;padding:18px 20px;padding-top:calc(18px + env(safe-area-inset-top,0px));display:grid;gap:4px;position:relative}
+.dhead h2{font-size:24px}.dhead .meta{opacity:.92;font-size:14px}
+.dhead .x{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:12px;width:36px;height:36px;border:0;border-radius:10px;background:rgba(255,255,255,.2);color:#fff;font-size:22px;cursor:pointer}
+.dbody{padding:18px 20px 40px;display:grid;gap:16px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.fact b{display:block;font-family:var(--wordmark);font-size:22px}.fact span{font-size:12px;color:var(--muted)}
+.linkrow{display:flex;gap:8px;align-items:center;background:var(--soft);border-radius:12px;padding:8px 10px;font-weight:700;color:var(--plum);direction:ltr;justify-content:space-between}
+.linkrow span{overflow-wrap:anywhere;min-width:0}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.qr{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.qr .box{background:#fff;padding:8px;border-radius:12px;width:146px;height:146px;display:grid;place-items:center}
+.guest{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px}
+.guest:first-child{border-top:0;padding-top:0}
+.guest h3{margin:0;font-size:16px;display:flex;justify-content:space-between;gap:8px}
+.guest h3 span{font-weight:400;color:var(--muted);font-size:13px;direction:ltr}
+.vids{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.vid{background:var(--soft);border-radius:12px;overflow:hidden;display:grid}
+.vid video{width:100%;aspect-ratio:4/5;object-fit:cover;background:#000;display:block}
+.vid .meta{display:flex;justify-content:space-between;align-items:center;padding:4px 6px;font-size:12px;gap:4px}
+.vid .meta a,.vid .meta button{border:0;background:none;cursor:pointer;color:var(--plum);font-weight:700;font-size:12px;padding:2px 4px;text-decoration:none}
+.vid .meta button{color:var(--pink)}
+.tag{font-size:11px;font-weight:700;color:#fff;background:var(--pink);border-radius:6px;padding:0 6px}
+.modal{position:fixed;inset:0;z-index:22;display:grid;place-items:center;padding:16px}
+.form{width:min(500px,100%);background:var(--surface);border-radius:20px;padding:20px;display:grid;gap:12px;max-height:90vh;overflow-y:auto}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;z-index:30}
+@media (max-width:600px){.kpis{grid-template-columns:1fr 1fr 1fr}.kpi b{font-size:24px}.fgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <div class="logo"><svg viewBox="0 0 38 26" aria-hidden="true"><rect width="27" height="26" rx="6" fill="#fff"/><path d="M29 9.5 38 4v18l-9-5.5z" fill="#fff"/><g fill="#E5446F"><circle cx="7.5" cy="9" r="2.6"/><circle cx="7.5" cy="17" r="2.6"/><circle cx="19" cy="13" r="2.6"/></g><path d="M7.5 9 19 13 7.5 17" stroke="#E5446F" stroke-width="1.8" fill="none"/></svg><b>VISHARE</b><small>ADMIN</small></div>
+  <button id="logout" hidden>יציאה</button>
+</div></header>
+
+<main>
+  <form class="card login" id="login" hidden>
+    <h1>כניסה לניהול</h1>
+    <div class="f"><label for="tok">סיסמת ניהול (ADMIN_TOKEN)</label><input id="tok" type="password" autocomplete="current-password" required></div>
+    <button class="btn" type="submit">כניסה</button>
+    <p class="sub">הסיסמה נשמרת רק בדפדפן הזה.</p>
+  </form>
+
+  <section id="dash" hidden style="display:grid;gap:18px">
+    <div class="head"><div><h1>אירועים</h1><p class="sub">לחצו על אירוע כדי לראות את הלינקים והסרטונים</p></div><button class="btn" id="new">אירוע חדש</button></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="tbl"><table><thead><tr><th>אירוע</th><th>תאריך</th><th>חבילה</th><th>סטטוס</th><th>ההעלאה נסגרת</th><th>אורחים שצילמו</th><th>סרטונים</th></tr></thead><tbody id="rows"></tbody></table></div>
+  </section>
+</main>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden></aside>
+
+<div class="modal" id="modal" hidden>
+  <form class="form" id="new-form">
+    <h2>אירוע חדש</h2>
+    <div class="fgrid">
+      <div class="f full"><label for="n-names">שמות (כמו שיופיע לאורחים)</label><input id="n-names" required placeholder="דנה ודוד"></div>
+      <div class="f full"><label for="n-slug">כתובת הלינק, באנגלית</label><input id="n-slug" required dir="ltr" placeholder="dana-david" pattern="[a-z0-9-]+"><small dir="ltr" id="slug-preview">vishare.co.il/e/…</small></div>
+      <div class="f"><label for="n-type">סוג</label><select id="n-type"><option>חתונה</option><option>בר מצווה</option><option>בת מצווה</option><option>חינה</option><option>ברית</option><option>אירוע חברה</option></select></div>
+      <div class="f"><label for="n-date">תאריך</label><input id="n-date" type="date" required></div>
+      <div class="f full"><label for="n-venue">מקום</label><input id="n-venue" placeholder="אולמי אגמים, באר שבע"></div>
+      <div class="f"><label for="n-pkg">חבילה</label><select id="n-pkg"><option>בסיס</option><option>מתקדמת</option><option selected>פרימיום</option></select></div>
+      <div class="f"><label for="n-inv">מספר מוזמנים</label><input id="n-inv" type="number" min="0" value="250"></div>
+    </div>
+    <p class="sub">ההעלאה תיסגר יומיים אחרי האירוע ב־20:00. אפשר לשנות אחר כך.</p>
+    <div class="acts"><button class="btn" type="submit" id="n-submit">יצירת האירוע</button><button class="btn ghost" type="button" id="n-cancel">ביטול</button></div>
+  </form>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/admin.js"></script>
+</body>
+</html>
