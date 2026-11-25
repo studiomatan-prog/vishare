@@ -3,14 +3,14 @@
 
 const enc = new TextEncoder();
 
-export function presignR2(env, method, key, expiresSec = 3600, extra = {}) {
+export async function presignR2(env, method, key, expiresSec = 3600, extra = {}) {
   return presign({
     method, expiresSec, extra,
     host: `${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     path: `/${env.R2_BUCKET}/${key.split("/").map(uriEncode).join("/")}`,
     region: "auto",
-    accessKeyId: env.R2_ACCESS_KEY_ID,
-    secret: env.R2_SECRET_ACCESS_KEY,
+    accessKeyId: String(env.R2_ACCESS_KEY_ID || "").trim(),
+    secret: await r2Secret(env.R2_SECRET_ACCESS_KEY),
   });
 }
 
@@ -39,6 +39,14 @@ export async function presign({ method, host, path, region, accessKeyId, secret,
   const sig = await hex(await hmac(k, toSign));
 
   return `https://${host}${path}?${query}&X-Amz-Signature=${sig}`;
+}
+
+// R2's "Secret Access Key" is the SHA-256 (hex) of the API token value. If the token value
+// was saved instead of the secret, derive the secret from it so uploads still work.
+async function r2Secret(raw) {
+  const v = String(raw || "").trim();
+  if (/^[0-9a-f]{64}$/i.test(v)) return v;
+  return hex(await sha(v));
 }
 
 function uriEncode(s) {
