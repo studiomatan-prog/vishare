@@ -14,7 +14,10 @@ export default {
       if (url.pathname.startsWith("/api/")) return await api(req, env, url);
       // Guest link: /e/<slug>  -> guest page (slug is read client-side)
       if (/^\/e\/[a-z0-9-]+\/?$/.test(url.pathname)) {
-        return env.ASSETS.fetch(new Request(new URL("/guest.html", url), req));
+        // Fetch "/guest", not "/guest.html": static assets answer "*.html" with a redirect,
+        // which would change the address in the guest's browser and lose the event slug.
+        const page = await env.ASSETS.fetch(new Request(new URL("/guest", url), { headers: req.headers }));
+        return new Response(page.body, { status: page.status, headers: page.headers });
       }
       return env.ASSETS.fetch(req);
     } catch (e) {

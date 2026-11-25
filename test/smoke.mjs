@@ -61,5 +61,5 @@ assert((await call("POST", "/api/me/uploads", { contentType: "image/jpeg", size:
 tables.events[0].upload_closes_at = "2000-01-01T00:00:00Z";
 assert((await call("POST", "/api/me/uploads", { contentType: "video/mp4", size: 10 }, tok)).status === 403, "closed event refuses uploads");
 r = await worker.fetch(new Request("https://vishare.co.il/e/dana-david"), env);
-assert((await r.text()) === "asset:/guest.html", "guest link serves guest page");
+assert((await r.text()) === "asset:/guest", "guest link serves guest page");
 console.log("ALL PASSED");
