@@ -30,5 +30,11 @@ events.invited_count = how many invitees the couple's package allows (0 = unlimi
 Raw guest videos are deleted by the daily cron 30 days after uploads close, ONLY if LOCO marked the event as backed up
 (events.raw_backed_up_at). Events, links and edited videos (edits) are never deleted.
 
+## Auto-edit spec (agreed with LOCO, for when the pipeline is built)
+- Output: short vertical reels up to ~1 min per moment (חופה, ריקודים, סלואו, צילומי חוץ); greetings video length follows the number of greeters.
+- Logo watermark: logo fades in for a few seconds like a credit (default: VISHARE logo, lower corner, from ~1s for ~3s). Logo files: Drive VISHARE/לוגו.
+- Music: Envato Elements tracks from Drive VISHARE/מוזיקה/<moment>; Envato is per-project, so the approval screen must list the tracks used so LOCO can register a license per event.
+- Every edit goes to LOCO for approval before the couple gets it.
+
 ## Not built yet
 WhatsApp Cloud API sending (invite to all invitees not yet sent; end-of-event + morning reminders only to guests who joined; 'video ready'; couple raw-deletion warning) — templates drafted in chat, auto-edit pipeline with approval flow, resumable/multipart uploads.
