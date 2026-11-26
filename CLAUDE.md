@@ -32,7 +32,7 @@ Raw guest videos are deleted by the daily cron 30 days after uploads close, ONLY
 
 ## Auto-edit spec (agreed with LOCO, for when the pipeline is built)
 - Output: short vertical reels up to ~1 min per moment (חופה, ריקודים, סלואו, צילומי חוץ); greetings video length follows the number of greeters.
-- Logo watermark: logo fades in for a few seconds like a credit (default: VISHARE logo, lower corner, from ~1s for ~3s). Logo files: Drive VISHARE/לוגו.
+- Logo watermark: VISHARE logo only, lower corner, fades in at ~1s, stays ~3s, fades out. Not repeated at the end. Logo files: Drive VISHARE/לוגו.
 - Music: Envato Elements tracks from Drive VISHARE/מוזיקה/<moment>; Envato is per-project, so the approval screen must list the tracks used so LOCO can register a license per event.
 - Every edit goes to LOCO for approval before the couple gets it.
 
