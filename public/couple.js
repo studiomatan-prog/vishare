@@ -7,7 +7,8 @@
   let D = null, parsed = null, size = 0;
   // Printed on every table sign and roll-up, for every event.
   const BRAND = { tagline: "רוצים VISHARE באירוע שלכם?", phoneLabel: "להזמנות:", phone: "052-6549971", site: "vishare.co.il" };
-  const SIZES = [["כרטיס ביקור", 50, 90], ["A5", 148, 210], ["A4", 210, 297], ["רול־אפ 85×200", 850, 2000]]; // [label, width mm, height mm]
+  // [label, file width mm, file height mm, dpi]. Roll-ups are sent to print at 1:10 scale (8.5×20 cm) and 600 dpi.
+  const SIZES = [["כרטיס ביקור", 50, 90, 300], ["A5", 148, 210, 300], ["A4", 210, 297, 300], ["רול־אפ 85×200", 85, 200, 600]];
 
   async function api(path, { method = "GET", body } = {}) {
     const res = await fetch(path, { method, headers: { "content-type": "application/json", authorization: `Bearer ${token}` }, body: body ? JSON.stringify(body) : undefined });
@@ -92,10 +93,10 @@ ${D.guestLink}
     let s = size; g.font = `${weight} ${Math.round(s)}px ${family}`;
     while (g.measureText(text).width > maxW && s > size * 0.4) { s *= 0.95; g.font = `${weight} ${Math.round(s)}px ${family}`; }
   }
-  // maxH = target height in pixels; print files use up to 300 dpi (a roll-up gets ~90 dpi, plenty at viewing distance)
-  async function signCanvas(maxH) {
-    const [, wmm, hmm] = SIZES[size];
-    const dpi = Math.min(300, maxH / (hmm / 25.4));
+  // previewH = height in pixels for the on-screen preview; without it, the print file at the size's dpi
+  async function signCanvas(previewH) {
+    const [, wmm, hmm, printDpi] = SIZES[size];
+    const dpi = previewH ? previewH / (hmm / 25.4) : printDpi;
     const W = Math.round((wmm / 25.4) * dpi), H = Math.round((hmm / 25.4) * dpi);
     const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
     try { await Promise.all([document.fonts.load("800 80px Rubik"), document.fonts.load("700 80px Rubik"), document.fonts.load("500 80px Oswald"), document.fonts.load("400 40px Assistant")]); } catch {}
@@ -154,7 +155,7 @@ ${D.guestLink}
     if (!window.jspdf) return toast("לא הצלחנו לטעון את יוצר ה־PDF. רעננו ונסו שוב");
     $("pdf").disabled = true;
     try {
-      const [, w, h] = SIZES[size]; const c = await signCanvas(7000);
+      const [, w, h] = SIZES[size]; const c = await signCanvas();
       const pdf = new jspdf.jsPDF({ unit: "mm", format: [w, h], orientation: "portrait" });
       pdf.addImage(c.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, w, h);
       pdf.save(`vishare-${D.event.slug}-${w}x${h}.pdf`);
