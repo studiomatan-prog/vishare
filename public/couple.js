@@ -7,7 +7,7 @@
   let D = null, parsed = null, size = 0;
   // Printed on every table sign and roll-up, for every event.
   const BRAND = { tagline: "רוצים VISHARE באירוע שלכם?", phoneLabel: "להזמנות:", phone: "052-6549971", site: "vishare.co.il" };
-  const SIZES = [["שלט שולחן 10×15", 100, 150], ["A5", 148, 210], ["A4", 210, 297]];
+  const SIZES = [["כרטיס ביקור", 50, 90], ["A5", 148, 210], ["A4", 210, 297], ["רול־אפ 85×200", 850, 2000]]; // [label, width mm, height mm]
 
   async function api(path, { method = "GET", body } = {}) {
     const res = await fetch(path, { method, headers: { "content-type": "application/json", authorization: `Bearer ${token}` }, body: body ? JSON.stringify(body) : undefined });
@@ -87,58 +87,74 @@ ${D.guestLink}
     $("sizes").innerHTML = SIZES.map((s, i) => `<button class="chip" aria-pressed="${i === size}" data-i="${i}">${s[0]}</button>`).join("");
     $("sizes").querySelectorAll("button").forEach((b) => (b.onclick = () => { size = +b.dataset.i; renderSizes(); drawSign(); }));
   }
-  async function signCanvas(scale) {
+  // Shrink a font until the text fits the given width
+  function fitFont(g, text, weight, size, family, maxW) {
+    let s = size; g.font = `${weight} ${Math.round(s)}px ${family}`;
+    while (g.measureText(text).width > maxW && s > size * 0.4) { s *= 0.95; g.font = `${weight} ${Math.round(s)}px ${family}`; }
+  }
+  // maxH = target height in pixels; print files use up to 300 dpi (a roll-up gets ~90 dpi, plenty at viewing distance)
+  async function signCanvas(maxH) {
     const [, wmm, hmm] = SIZES[size];
-    const W = Math.round((wmm / 25.4) * 300 * scale), H = Math.round((hmm / 25.4) * 300 * scale);
+    const dpi = Math.min(300, maxH / (hmm / 25.4));
+    const W = Math.round((wmm / 25.4) * dpi), H = Math.round((hmm / 25.4) * dpi);
     const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
     try { await Promise.all([document.fonts.load("800 80px Rubik"), document.fonts.load("700 80px Rubik"), document.fonts.load("500 80px Oswald"), document.fonts.load("400 40px Assistant")]); } catch {}
-    const u = W / 100; // 1% of width
+    const u = W / 100; // 1% of width; everything scales with it
+    const tall = H / W > 1.6;
     g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
-    const band = Math.round(H * 0.13);
+    g.textAlign = "center"; g.textBaseline = "middle";
+
+    // Top band with the wordmark
+    const band = Math.round(Math.min(H * 0.13, u * (H / W > 2 ? 24 : 18)));
     const gr = g.createLinearGradient(0, 0, W, band); gr.addColorStop(0, "#8E3F9E"); gr.addColorStop(0.55, "#E5446F"); gr.addColorStop(1, "#F6994C");
     g.fillStyle = gr; g.fillRect(0, 0, W, band);
-    g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "middle"; g.direction = "ltr";
+    g.fillStyle = "#fff"; g.direction = "ltr";
     g.font = `500 ${Math.round(u * 9)}px Oswald, "Arial Narrow", sans-serif`; g.fillText("VISHARE", W / 2, band / 2);
-    g.direction = "rtl";
-    let y = band + u * 13;
-    g.fillStyle = "#8E3F9E"; g.font = `700 ${Math.round(u * 7.5)}px Rubik, Arial, sans-serif`; g.fillText("צלמו אותנו!", W / 2, y);
-    y += u * 12;
-    g.fillStyle = "#D9762E"; let fs = u * 11; g.font = `800 ${Math.round(fs)}px Rubik, Arial, sans-serif`;
-    while (g.measureText(D.event.coupleNames).width > W * 0.86 && fs > u * 5) { fs -= u * 0.5; g.font = `800 ${Math.round(fs)}px Rubik, Arial, sans-serif`; }
-    g.fillText(D.event.coupleNames, W / 2, y);
-    y += u * 9;
-    // QR as big as fits: below it come the two text lines, the guest link and the contact band (~44% of width)
-    const qs = Math.round(Math.min(W * 0.58, H - y - u * 44));
-    const q = qrCanvas(512); g.imageSmoothingEnabled = false;
-    const pad = u * 2.5; g.fillStyle = "#fff"; g.strokeStyle = "#ECE1EC"; g.lineWidth = u * 0.4;
-    g.beginPath(); g.roundRect((W - qs) / 2 - pad, y - pad, qs + pad * 2, qs + pad * 2, u * 3); g.fill(); g.stroke();
-    g.drawImage(q, (W - qs) / 2, y, qs, qs);
-    y += qs + pad + u * 9;
-    g.fillStyle = "#2A1730"; g.font = `700 ${Math.round(u * 5.4)}px Rubik, Arial, sans-serif`; g.fillText("סורקים, מצלמים, והסרטון מגיע אלינו", W / 2, y);
-    y += u * 7;
-    g.fillStyle = "#75667A"; g.font = `400 ${Math.round(u * 4.2)}px Assistant, Arial, sans-serif`; g.fillText("בלי להוריד אפליקציה", W / 2, y);
-    // Guest link (in case the QR doesn't scan)
+
+    // Bottom band: LOCO contact, printed on every sign (BRAND in this file)
     const foot = Math.round(u * 13);
-    g.direction = "ltr"; g.font = `500 ${Math.round(u * 3.6)}px Oswald, Arial, sans-serif`; g.fillStyle = "#8E3F9E";
-    g.fillText(D.guestLink.replace(/^https?:\/\//, ""), W / 2, H - foot - u * 4.5);
-    // LOCO contact band, printed on every sign (BRAND in this file)
     g.fillStyle = "#F5ECF4"; g.fillRect(0, H - foot, W, foot);
     g.direction = "rtl"; g.fillStyle = "#2A1730";
-    g.font = `700 ${Math.round(u * 3.6)}px Rubik, Arial, sans-serif`;
+    fitFont(g, BRAND.tagline, "700", u * 3.6, "Rubik, Arial, sans-serif", W * 0.92);
     g.fillText(BRAND.tagline, W / 2, H - foot + foot * 0.34);
-    g.font = `500 ${Math.round(u * 3.9)}px Rubik, Arial, sans-serif`; g.fillStyle = "#8E3F9E";
-    g.fillText(`${BRAND.phoneLabel} ${BRAND.phone}  ·  ${BRAND.site}`, W / 2, H - foot + foot * 0.72);
+    const contact = `${BRAND.phoneLabel} ${BRAND.phone}  ·  ${BRAND.site}`;
+    g.fillStyle = "#8E3F9E"; fitFont(g, contact, "500", u * 3.9, "Rubik, Arial, sans-serif", W * 0.92);
+    g.fillText(contact, W / 2, H - foot + foot * 0.72);
+
+    // Middle block, centered between the bands. Its height = QR + 48u of text.
+    const v = tall ? u * 1.25 : u; // tall formats (card, roll-up) get bigger text and QR
+    const room = H - band - foot;
+    const qs = Math.round(Math.min(W * (tall ? 0.8 : 0.58), room - v * 60));
+    let y = band + Math.max(v * 10, (room - (qs + v * 48)) / 2 + v * 4);
+    g.fillStyle = "#8E3F9E"; fitFont(g, "צלמו אותנו!", "700", v * 7.5, "Rubik, Arial, sans-serif", W * 0.9); g.fillText("צלמו אותנו!", W / 2, y);
+    y += v * 12;
+    g.fillStyle = "#D9762E"; let fs = v * 11; g.font = `800 ${Math.round(fs)}px Rubik, Arial, sans-serif`;
+    while (g.measureText(D.event.coupleNames).width > W * 0.86 && fs > v * 5) { fs -= v * 0.5; g.font = `800 ${Math.round(fs)}px Rubik, Arial, sans-serif`; }
+    g.fillText(D.event.coupleNames, W / 2, y);
+    y += v * 9;
+    const q = qrCanvas(1024); g.imageSmoothingEnabled = false;
+    const pad = v * 2.5; g.fillStyle = "#fff"; g.strokeStyle = "#ECE1EC"; g.lineWidth = v * 0.4;
+    g.beginPath(); g.roundRect((W - qs) / 2 - pad, y - pad, qs + pad * 2, qs + pad * 2, v * 3); g.fill(); g.stroke();
+    g.drawImage(q, (W - qs) / 2, y, qs, qs);
+    y += qs + pad + v * 9;
+    g.fillStyle = "#2A1730"; fitFont(g, "סורקים, מצלמים, והסרטון מגיע אלינו", "700", v * 5.4, "Rubik, Arial, sans-serif", W * 0.9); g.fillText("סורקים, מצלמים, והסרטון מגיע אלינו", W / 2, y);
+    y += v * 7;
+    g.fillStyle = "#75667A"; g.font = `400 ${Math.round(v * 4.2)}px Assistant, Arial, sans-serif`; g.fillText("בלי להוריד אפליקציה", W / 2, y);
+    y += v * 8;
+    // Guest link, in case the QR doesn't scan
+    g.direction = "ltr"; g.font = `500 ${Math.round(v * 3.6)}px Oswald, Arial, sans-serif`; g.fillStyle = "#8E3F9E";
+    g.fillText(D.guestLink.replace(/^https?:\/\//, ""), W / 2, y);
     return c;
   }
   async function drawSign() {
-    const c = await signCanvas(0.35); const s = $("sign");
+    const c = await signCanvas(720); const s = $("sign");
     s.width = c.width; s.height = c.height; s.getContext("2d").drawImage(c, 0, 0);
   }
   $("pdf").onclick = async () => {
     if (!window.jspdf) return toast("לא הצלחנו לטעון את יוצר ה־PDF. רעננו ונסו שוב");
     $("pdf").disabled = true;
     try {
-      const [, w, h] = SIZES[size]; const c = await signCanvas(1);
+      const [, w, h] = SIZES[size]; const c = await signCanvas(7000);
       const pdf = new jspdf.jsPDF({ unit: "mm", format: [w, h], orientation: "portrait" });
       pdf.addImage(c.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, w, h);
       pdf.save(`vishare-${D.event.slug}-${w}x${h}.pdf`);
