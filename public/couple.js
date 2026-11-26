@@ -5,6 +5,8 @@
   let token = location.hash.slice(1);
   try { if (token) localStorage.setItem(KEY, token); else token = localStorage.getItem(KEY) || ""; } catch {}
   let D = null, parsed = null, size = 0;
+  // Printed on every table sign and roll-up, for every event.
+  const BRAND = { tagline: "רוצים VISHARE באירוע שלכם?", phoneLabel: "להזמנות:", phone: "052-6549971", site: "vishare.co.il" };
   const SIZES = [["שלט שולחן 10×15", 100, 150], ["A5", 148, 210], ["A4", 210, 297]];
 
   async function api(path, { method = "GET", body } = {}) {
@@ -104,7 +106,9 @@ ${D.guestLink}
     g.fillStyle = "#D9762E"; let fs = u * 11; g.font = `800 ${Math.round(fs)}px Rubik, Arial, sans-serif`;
     while (g.measureText(D.event.coupleNames).width > W * 0.86 && fs > u * 5) { fs -= u * 0.5; g.font = `800 ${Math.round(fs)}px Rubik, Arial, sans-serif`; }
     g.fillText(D.event.coupleNames, W / 2, y);
-    const qs = Math.round(Math.min(W * 0.58, H * 0.4)); y += u * 9;
+    y += u * 9;
+    // QR as big as fits: below it come the two text lines, the guest link and the contact band (~44% of width)
+    const qs = Math.round(Math.min(W * 0.58, H - y - u * 44));
     const q = qrCanvas(512); g.imageSmoothingEnabled = false;
     const pad = u * 2.5; g.fillStyle = "#fff"; g.strokeStyle = "#ECE1EC"; g.lineWidth = u * 0.4;
     g.beginPath(); g.roundRect((W - qs) / 2 - pad, y - pad, qs + pad * 2, qs + pad * 2, u * 3); g.fill(); g.stroke();
@@ -113,8 +117,17 @@ ${D.guestLink}
     g.fillStyle = "#2A1730"; g.font = `700 ${Math.round(u * 5.4)}px Rubik, Arial, sans-serif`; g.fillText("סורקים, מצלמים, והסרטון מגיע אלינו", W / 2, y);
     y += u * 7;
     g.fillStyle = "#75667A"; g.font = `400 ${Math.round(u * 4.2)}px Assistant, Arial, sans-serif`; g.fillText("בלי להוריד אפליקציה", W / 2, y);
+    // Guest link (in case the QR doesn't scan)
+    const foot = Math.round(u * 13);
     g.direction = "ltr"; g.font = `500 ${Math.round(u * 3.6)}px Oswald, Arial, sans-serif`; g.fillStyle = "#8E3F9E";
-    g.fillText(D.guestLink.replace(/^https?:\/\//, ""), W / 2, H - u * 6);
+    g.fillText(D.guestLink.replace(/^https?:\/\//, ""), W / 2, H - foot - u * 4.5);
+    // LOCO contact band, printed on every sign (BRAND in this file)
+    g.fillStyle = "#F5ECF4"; g.fillRect(0, H - foot, W, foot);
+    g.direction = "rtl"; g.fillStyle = "#2A1730";
+    g.font = `700 ${Math.round(u * 3.6)}px Rubik, Arial, sans-serif`;
+    g.fillText(BRAND.tagline, W / 2, H - foot + foot * 0.34);
+    g.font = `500 ${Math.round(u * 3.9)}px Rubik, Arial, sans-serif`; g.fillStyle = "#8E3F9E";
+    g.fillText(`${BRAND.phoneLabel} ${BRAND.phone}  ·  ${BRAND.site}`, W / 2, H - foot + foot * 0.72);
     return c;
   }
   async function drawSign() {

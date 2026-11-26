@@ -19,6 +19,10 @@ Owner: LOCO GROUP (Matan & Jenia). All user-facing text is Hebrew, RTL.
 Guest page (/e/<slug>), couple page (/couple#token: link+message, WhatsApp share, sign PDF/QR, Excel guest list -> invitees table, all guest videos, edited videos), admin page (/admin: events, create, links + QR, close time, videos by guest, download, delete).
 Supabase note: tables needed explicit `grant ... to service_role` (project created without auto-grant).
 
+## Print materials
+Every sign generated on the couple page carries LOCO's booking line: BRAND in public/couple.js
+(phone 052-6549971, vishare.co.il). Keep it on any new print material.
+
 ## Message quota
 events.invited_count = how many invitees the couple's package allows (0 = unlimited). Enforced on PUT /api/couple/invitees.
 
